@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option csharp_namespace = "MunitS";
+
+package storage;
+
+service BlobStorage {
+  rpc UploadFile(UploadRequest) returns (UploadResponse);
+}
+
+message UploadRequest {
+  FileMetadata metadata = 1;
+  bytes data = 2;
+}
+
+message FileMetadata {
+  string fileName = 1;
+  string contentType = 2;
+}
+
+message UploadResponse {
+  string status = 1;
+}

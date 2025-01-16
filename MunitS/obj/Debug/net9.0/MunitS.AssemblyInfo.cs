@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MunitS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b82b05e38d5d0ce21353750f9f02b7b8608716bf")]
 [assembly: System.Reflection.AssemblyProductAttribute("MunitS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MunitS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
