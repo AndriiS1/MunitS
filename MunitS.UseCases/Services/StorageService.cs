@@ -1,8 +1,6 @@
-namespace MunitS.Services;
-
 using Grpc.Core;
-using System.IO;
-using System.Threading.Tasks;
+using MunitS.Protos;
+namespace MunitS.UseCases.Services;
 
 public class StorageService : BlobStorage.BlobStorageBase
 {
