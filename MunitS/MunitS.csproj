@@ -4,15 +4,16 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>ecbac94e-3190-4ac2-a4d2-082a766b6b3a</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
-        <Protobuf Include="Protos\greet.proto" GrpcServices="Server"/>
-        <Protobuf Include="Protos\storage.proto" GrpcServices="Server"/>
+        <PackageReference Include="Grpc.AspNetCore" Version="2.64.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.AspNetCore" Version="2.64.0"/>
+      <ProjectReference Include="..\MunitS.Infrastructure\MunitS.Infrastructure.csproj" />
+      <ProjectReference Include="..\MunitS.UseCases\MunitS.UseCases.csproj" />
     </ItemGroup>
 
 </Project>

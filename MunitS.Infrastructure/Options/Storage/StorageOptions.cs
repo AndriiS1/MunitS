@@ -1,4 +1,4 @@
-namespace MunitS.Options.Storage;
+namespace MunitS.Infrastructure.Options.Storage;
 
 public record StorageOptions
 {

@@ -1,5 +1,5 @@
-using MunitS.Options.Storage;
-using MunitS.Services;
+using MunitS.Infrastructure.Options.Storage;
+using MunitS.UseCases;
 
 namespace MunitS;
 
@@ -12,13 +12,7 @@ public static class Program
         builder.ConfigureOptions();
 
         var app = builder.Build();
-        app.ConfigureGrpcServices();
+        app.ConfigureUseCases();
         app.Run();
-    }
-
-    private static void ConfigureGrpcServices(this WebApplication app)
-    {
-        app.MapGrpcService<GreeterService>();
-        app.MapGrpcService<StorageService>();
     }
 }

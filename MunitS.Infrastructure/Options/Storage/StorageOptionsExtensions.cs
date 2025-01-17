@@ -1,4 +1,6 @@
-namespace MunitS.Options.Storage;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+namespace MunitS.Infrastructure.Options.Storage;
 
 public static class StorageOptionsExtensions
 {
