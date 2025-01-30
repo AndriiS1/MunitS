@@ -450,6 +450,16 @@
           }
         }
       },
+      "MunitS.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/MunitS.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/MunitS.Domain.dll": {}
+        }
+      },
       "MunitS.Infrastructure/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -492,6 +502,8 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "MunitS.Domain": "1.0.0",
+          "MunitS.Infrastructure": "1.0.0",
           "MunitS.Protos": "1.0.0"
         },
         "compile": {
@@ -1249,6 +1261,11 @@
         "system.text.encodings.web.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "MunitS.Domain/1.0.0": {
+      "type": "project",
+      "path": "../MunitS.Domain/MunitS.Domain.csproj",
+      "msbuildProject": "../MunitS.Domain/MunitS.Domain.csproj"
     },
     "MunitS.Infrastructure/1.0.0": {
       "type": "project",

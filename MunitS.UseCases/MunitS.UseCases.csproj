@@ -7,6 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\MunitS.Domain\MunitS.Domain.csproj" />
+      <ProjectReference Include="..\MunitS.Infrastructure\MunitS.Infrastructure.csproj" />
       <ProjectReference Include="..\MunitS.Protos\MunitS.Protos.csproj" />
     </ItemGroup>
 
