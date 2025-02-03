@@ -4,6 +4,11 @@ namespace MunitS.Domain.Metadata;
 
 public static class MetadataTools
 {
+    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions() 
+    { 
+        WriteIndented = true
+    };
+    
     public static Metadata GetMetadata(MetadataPath path)
     {
         var stringMetadata = File.ReadAllText(path.Value);
@@ -17,9 +22,9 @@ public static class MetadataTools
         return metadata;
     }
     
-    private static void Write(this Metadata metadata)
+    public static async Task Write(this Metadata metadata)
     {
-        var jsonMetadata = JsonSerializer.Serialize(metadata);
-        File.WriteAllText(metadata.GetPath(), jsonMetadata);
+        var utf8Bytes = JsonSerializer.SerializeToUtf8Bytes(metadata, Options);
+        await File.WriteAllBytesAsync(metadata.Path.Value, utf8Bytes);
     }
 }

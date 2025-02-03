@@ -6,9 +6,9 @@ public class FileVersionedDirectory
     
     public Guid VersionId { get; }
 
-    public FileVersionedDirectory(FileDirectory fileDirectory)
+    public FileVersionedDirectory(ObjectDirectory objectDirectory, Guid versionId)
     {
-       VersionId = Guid.NewGuid();
-       Value = $"{fileDirectory}/{VersionId}";
+       VersionId = versionId;
+       Value = $"{objectDirectory.Value}/{versionId}";
     }
 }

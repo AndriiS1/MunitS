@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MunitS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5603ec086d50e5a0f8c0f0689d023ff965bb0d35")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e281f0e633fcb02504e94946bbc3f137649acb47")]
 [assembly: System.Reflection.AssemblyProductAttribute("MunitS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MunitS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

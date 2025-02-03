@@ -1,6 +1,6 @@
 namespace MunitS.Domain.Versioning.Configs;
 
-public class DisabledVersioning
+public class DisabledVersioning(Guid mainVersionId): VersioningConfig
 {
-    public Guid MainVersionId { get; set; }
+    public Guid MainVersionId { get; } = mainVersionId;
 }

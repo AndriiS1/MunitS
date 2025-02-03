@@ -1,8 +1,8 @@
 using MunitS.Domain.Chunk;
 namespace MunitS.Domain.Versioning;
 
-public class VersioningPath(FileDirectory fileDirectory)
+public class VersioningPath(ObjectDirectory objectDirectory)
 {
     private const string ConfigFileName = "versioning.json";
-    public string Value { get;} = $"{fileDirectory.Value}/{ConfigFileName}";
+    public string Value { get;} = $"{objectDirectory.Value}/{ConfigFileName}";
 }

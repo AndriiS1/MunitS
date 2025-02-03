@@ -1,26 +1,63 @@
 using Grpc.Core;
 using Microsoft.Extensions.Options;
 using MunitS.Domain.Chunk;
+using MunitS.Domain.Metadata;
+using MunitS.Domain.Versioning;
+using MunitS.Domain.Versioning.Configs;
 using MunitS.Infrastructure.Options.Storage;
 using MunitS.Protos;
+using Metadata = MunitS.Domain.Metadata.Metadata;
 namespace MunitS.UseCases.Services;
 
 public class StorageService(IOptions<StorageOptions> storageOptions) : BlobStorage.BlobStorageBase
 {
     public override async Task<UploadResponse> UploadFile(UploadRequest request, ServerCallContext context)
     {
-        var filePath = new FileDirectory(storageOptions.Value.RootDirectory, request.Metadata.FileName);
+        var fileGuid = Guid.NewGuid();
         
-        try
+        var fileDirectory = new ObjectDirectory(fileGuid);
+        
+        if (!DirectoryExistsOrNotEmpty(fileDirectory.Value))
         {
-            await File.WriteAllBytesAsync($"{storageOptions.Value.RootDirectory}/{request.Metadata.FileName}", request.Data.ToByteArray());
+            Directory.CreateDirectory(fileDirectory.Value);
+            
+            var objectVersionGuid  = Guid.NewGuid();
+            
+            var versioning = new Versioning(fileDirectory, new DisabledVersioning(objectVersionGuid), request.Metadata.FileKey);
+            
+            await versioning.Write();
+
+            var fileVersionedDirectory = new FileVersionedDirectory(fileDirectory, objectVersionGuid);
+            
+            var metadata = new Metadata(fileVersionedDirectory, 5, objectVersionGuid, request.Metadata.FileKey, DateTime.UtcNow);
+
+            Directory.CreateDirectory(fileVersionedDirectory.Value);
+            
+            await metadata.Write();
+            
+            var filePath = new ObjectPath(fileVersionedDirectory, request.Metadata.FileKey);
+            
+            try
+            {
+                await File.WriteAllBytesAsync(filePath.Value, request.Data.ToByteArray());
+            }
+            catch (Exception ex)
+            {
+                return new UploadResponse { Status = $"Failed: {ex.Message}" };
+            }
+
         }
-        catch (Exception ex)
+        else
         {
-            return new UploadResponse { Status = $"Failed: {ex.Message}" };
+            
         }
         
         return new UploadResponse { Status = "Success" };
+    }
+
+    public bool DirectoryExistsOrNotEmpty(string path)
+    {
+        return Directory.Exists(path) ;
     }
 }
 

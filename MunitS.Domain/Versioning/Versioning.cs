@@ -2,9 +2,10 @@ using MunitS.Domain.Chunk;
 using MunitS.Domain.Versioning.Configs;
 namespace MunitS.Domain.Versioning;
 
-public class Versioning(FileDirectory fileDirectory)
+public class Versioning(ObjectDirectory objectDirectory, VersioningConfig config, string fileKey)
 {
-    private VersioningPath Path { get; } = new(fileDirectory);
-    
-    private VersioningConfig Config { get; }
+    public string FileKey { get; } = fileKey;
+    public VersioningPath Path { get; } = new(objectDirectory);
+
+    private VersioningConfig Config { get; } = config;
 }

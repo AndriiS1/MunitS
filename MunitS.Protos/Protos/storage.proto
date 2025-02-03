@@ -14,7 +14,7 @@ message UploadRequest {
 }
 
 message FileMetadata {
-  string fileName = 1;
+  string fileKey = 1;
   string contentType = 2;
 }
 
