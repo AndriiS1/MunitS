@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using MunitS.Infrastructure.Options.Storage;
 namespace MunitS.Infrastructure.Options.Versioning;
 
 public static class VersioningOptionsExtensions

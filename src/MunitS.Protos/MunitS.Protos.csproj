@@ -42,10 +42,4 @@
       <PackageReference Include="Microsoft.Extensions.Primitives" Version="9.0.1" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Reference Include="Microsoft.AspNetCore">
-        <HintPath>..\..\..\.dotnet\shared\Microsoft.AspNetCore.App\9.0.0\Microsoft.AspNetCore.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
 </Project>
