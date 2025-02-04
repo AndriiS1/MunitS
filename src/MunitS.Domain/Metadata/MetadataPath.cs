@@ -1,8 +1,8 @@
 using MunitS.Domain.Chunk;
 namespace MunitS.Domain.Metadata;
 
-public class MetadataPath(FileVersionedDirectory fileVersionedDirectory)
+public class MetadataPath(VersionedObjectDirectory versionedObjectDirectory)
 {
     private const string MetadataFileName = "metadata.json";
-    public string Value { get;} = $"{fileVersionedDirectory.Value}/{MetadataFileName}";
+    public string Value { get;} = $"{versionedObjectDirectory.Value}/{MetadataFileName}";
 }

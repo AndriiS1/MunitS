@@ -17,10 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="f87ba15b-665e-4659-b77d-f6b065d07c93\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Remove="f87ba15b-665e-4659-b77d-f6b065d07c93\versioning.json" />
     </ItemGroup>
 

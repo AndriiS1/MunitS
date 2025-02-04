@@ -1,66 +1,89 @@
 using Grpc.Core;
-using Microsoft.Extensions.Options;
+using MediatR;
+using MunitS.Domain.Bucket;
 using MunitS.Domain.Chunk;
-using MunitS.Domain.Metadata;
 using MunitS.Domain.Versioning;
-using MunitS.Domain.Versioning.Configs;
+using MunitS.Infrastructure.Data.Repositories.Bucket;
 using MunitS.Infrastructure.Data.Repositories.Metadata;
-using MunitS.Infrastructure.Options.Storage;
+using MunitS.Infrastructure.Data.Repositories.Object;
+using MunitS.Infrastructure.Data.Repositories.ObjectVersioning;
 using MunitS.Protos;
 using Metadata = MunitS.Domain.Metadata.Metadata;
+using Object = MunitS.Domain.Object.Object;
 namespace MunitS.UseCases.Services;
 
-public class StorageService(IOptions<StorageOptions> storageOptions, IMetadataRepository metadataRepository) : BlobStorage.BlobStorageBase
+public class StorageService(Mediator mediator, IMetadataRepository metadataRepository, IBucketRepository bucketRepository, IObjectRepository objectRepository,
+    IObjectVersionRepository objectVersionRepository) : BlobStorage.BlobStorageBase
 {
     public override async Task<UploadResponse> UploadFile(UploadRequest request, ServerCallContext context)
     {
-        var fileGuid = Guid.NewGuid();
+        var bucket = await bucketRepository.Get(request.BucketName);
         
-        var fileDirectory = new ObjectDirectory(fileGuid);
+        if(bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {request.BucketName} is not found."));
         
-        if (!DirectoryExistsOrNotEmpty(fileDirectory.Value))
+        var bucketDirectory = new BucketDirectory(bucket.Name);
+        
+        var @object = await objectRepository.Get(bucket.Id, request.FileKey);
+        
+        var uploaded = DateTime.UtcNow;
+        
+
+        if (@object is null)
         {
-            Directory.CreateDirectory(fileDirectory.Value);
-            
-            var objectVersionGuid  = Guid.NewGuid();
-            
-            var versioning = new Versioning(fileDirectory, new DisabledVersioning(objectVersionGuid), request.Metadata.FileKey);
-            
-            await versioning.Write();
+            var newObject = new Object(bucket.Id);
+            var newVersion = new ObjectVersion(newObject.Id, uploaded);
 
-            var fileVersionedDirectory = new FileVersionedDirectory(fileDirectory, objectVersionGuid);
+            await objectVersionRepository.Create(newVersion);
             
-            var metadata = new Metadata(fileVersionedDirectory, 5, objectVersionGuid, request.Metadata.FileKey, DateTime.UtcNow);
+            await objectRepository.Create(newObject);
             
-            await metadataRepository.Create(metadata);
-
-            // Directory.CreateDirectory(fileVersionedDirectory.Value);
-            //
-            // await metadata.Write();
-            //
-            // var filePath = new ObjectPath(fileVersionedDirectory, request.Metadata.FileKey);
-            //
-            // try
-            // {
-            //     await File.WriteAllBytesAsync(filePath.Value, request.Data.ToByteArray());
-            // }
-            // catch (Exception ex)
-            // {
-            //     return new UploadResponse { Status = $"Failed: {ex.Message}" };
-            // }
-
+            var objectPath = CreateInitialDirectories(bucketDirectory, newObject.Id, newVersion.Id);
+            
+            //TODO: file chuncking
         }
         else
         {
+            var newVersion = new ObjectVersion(@object.Id, uploaded);
             
+            var objectVersions = await objectVersionRepository.GetAll(@object.Id);
+                
+            var versionsLimitReached = objectVersions.Count >= bucket.VersionsLimit;
+            
+            if (objectVersions.Count == 0) throw new RpcException(new Status(StatusCode.NotFound, $"No versions found for object: {@object.Id}."));
+            
+            await Task.WhenAll(objectVersionRepository.DeleteOldest(@object.Id), objectVersionRepository.Create(newVersion));
+                    
+            //TODO: delete oldest version from disk
+            if (bucket.VersioningEnabled)
+            {
+                if (versionsLimitReached)
+                {
+                }
+            }
+
+            var objectPath = CreateInitialDirectories(bucketDirectory, @object.Id, newVersion.Id);
+
+            //TODO: file chuncking
         }
         
         return new UploadResponse { Status = "Success" };
     }
 
-    public bool DirectoryExistsOrNotEmpty(string path)
+    private static ObjectPath CreateInitialDirectories(BucketDirectory bucketDirectory, Guid objectId, Guid versionId)
     {
-        return Directory.Exists(path) ;
+        var objectDirectory = new ObjectDirectory(bucketDirectory, objectId);
+        var versionedObjectDirectory = new VersionedObjectDirectory(objectDirectory, versionId);
+        var objectPath = new ObjectPath(versionedObjectDirectory);
+
+        if (!Directory.Exists(objectDirectory.Value))
+        {
+            Directory.CreateDirectory(objectDirectory.Value);  
+        }
+
+        Directory.CreateDirectory(versionedObjectDirectory.Value);
+        Directory.CreateDirectory(objectPath.Value);
+
+        return objectPath;
     }
 }
 

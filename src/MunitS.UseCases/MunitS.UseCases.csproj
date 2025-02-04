@@ -12,4 +12,8 @@
       <ProjectReference Include="..\MunitS.Protos\MunitS.Protos.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MediatR" Version="12.4.1" />
+    </ItemGroup>
+
 </Project>

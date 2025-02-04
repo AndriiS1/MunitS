@@ -9,13 +9,10 @@ service BlobStorage {
 }
 
 message UploadRequest {
-  FileMetadata metadata = 1;
-  bytes data = 2;
-}
-
-message FileMetadata {
-  string fileKey = 1;
-  string contentType = 2;
+  string bucketName = 1;
+  string fileKey = 2;
+  string contentType = 3;
+  bytes data = 4;
 }
 
 message UploadResponse {
