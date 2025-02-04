@@ -4,11 +4,12 @@ namespace MunitS.Infrastructure.Options.Storage;
 
 public static class StorageOptionsExtensions
 {
-    public static void ConfigureOptions(this WebApplicationBuilder builder)
+    public static void ConfigureStorageOptions(this WebApplicationBuilder builder)
     {
         builder.Services.AddOptions<StorageOptions>()
             .BindConfiguration(StorageOptions.Section)
             .Validate(ValidateOptions)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
     }
 

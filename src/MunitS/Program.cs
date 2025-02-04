@@ -1,4 +1,4 @@
-using MunitS.Infrastructure.Options.Storage;
+using MunitS.Infrastructure;
 using MunitS.UseCases;
 
 namespace MunitS;
@@ -9,7 +9,7 @@ public static class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddGrpc();
-        builder.ConfigureOptions();
+        builder.ConfigureInfrastructure();
 
         var app = builder.Build();
         app.ConfigureUseCases();
