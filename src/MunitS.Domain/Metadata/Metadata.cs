@@ -1,19 +1,29 @@
-using MunitS.Domain.Chunk;
 namespace MunitS.Domain.Metadata;
 
-public class Metadata(VersionedObjectDirectory versionedObjectDirectory, string fileKey, 
-    ulong fileSize, Guid versionId, string fileName, DateTime uploaded)
+public class Metadata
 {
-    public MetadataPath Path { get; } = new(versionedObjectDirectory);
-    public VersionedObjectDirectory VersionedObjectDirectory { get; } = versionedObjectDirectory;
-    public string FileName { get; } = fileName;
-    public string FileKey = fileKey;
-    public ulong FileSize = fileSize;
-    public string VersionId = versionId.ToString();
-    public DateTime Uploaded = uploaded;
+    public const string TableName = "metadata";
+    public required Guid VersionId { get; init; }
+    public required Guid ObjectId { get; init; }
+    public required string ContentType { get; init; }
+    public required long SizeInBytes { get; init; }
+    public required bool IsDeleted { get; init; } = false;
+    public required Dictionary<string, string> CustomMetadata { get; init; }
+    public required Dictionary<string, string> Tags { get; init; }
+    public required Dictionary<string, string> SearchableKeywords { get; init; }
     
-    // public string ToCreateInstance()
-    // {
-    //     return $"({Id}, {BucketId}, {FileKey})";
-    // }
+    public static Metadata Create(Guid versionId, Guid objectId, string contentType, long sizeInBytes)
+    {
+        return new Metadata
+        {
+            VersionId = versionId,
+            ObjectId = objectId,
+            ContentType = contentType,
+            SizeInBytes = sizeInBytes,
+            IsDeleted = false,
+            CustomMetadata = new Dictionary<string, string>(),
+            Tags = new Dictionary<string, string>(),
+            SearchableKeywords = new Dictionary<string, string>()
+        };
+    }
 }

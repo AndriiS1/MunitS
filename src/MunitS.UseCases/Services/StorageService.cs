@@ -1,5 +1,4 @@
 using Grpc.Core;
-using MediatR;
 using MunitS.Domain.Bucket;
 using MunitS.Domain.Chunk;
 using MunitS.Domain.Versioning;
@@ -12,11 +11,13 @@ using Metadata = MunitS.Domain.Metadata.Metadata;
 using Object = MunitS.Domain.Object.Object;
 namespace MunitS.UseCases.Services;
 
-public class StorageService(Mediator mediator, IMetadataRepository metadataRepository, IBucketRepository bucketRepository, IObjectRepository objectRepository,
+public class StorageService(IMetadataRepository metadataRepository, IBucketRepository bucketRepository, IObjectRepository objectRepository,
     IObjectVersionRepository objectVersionRepository) : BlobStorage.BlobStorageBase
 {
     public override async Task<UploadResponse> UploadFile(UploadRequest request, ServerCallContext context)
     {
+        // await bucketRepository.Create(new Bucket(request.BucketName));
+        
         var bucket = await bucketRepository.Get(request.BucketName);
         
         if(bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {request.BucketName} is not found."));
@@ -27,11 +28,10 @@ public class StorageService(Mediator mediator, IMetadataRepository metadataRepos
         
         var uploaded = DateTime.UtcNow;
         
-
         if (@object is null)
         {
-            var newObject = new Object(bucket.Id);
-            var newVersion = new ObjectVersion(newObject.Id, uploaded);
+            var newObject = Object.Create(bucket.Id, request.FileKey, "new_file.txt");
+            var newVersion = ObjectVersion.Create(newObject.Id, uploaded);
 
             await objectVersionRepository.Create(newVersion);
             
@@ -43,7 +43,7 @@ public class StorageService(Mediator mediator, IMetadataRepository metadataRepos
         }
         else
         {
-            var newVersion = new ObjectVersion(@object.Id, uploaded);
+            var newVersion = ObjectVersion.Create(@object.Id, uploaded);
             
             var objectVersions = await objectVersionRepository.GetAll(@object.Id);
                 
@@ -51,7 +51,9 @@ public class StorageService(Mediator mediator, IMetadataRepository metadataRepos
             
             if (objectVersions.Count == 0) throw new RpcException(new Status(StatusCode.NotFound, $"No versions found for object: {@object.Id}."));
             
-            await Task.WhenAll(objectVersionRepository.DeleteOldest(@object.Id), objectVersionRepository.Create(newVersion));
+            await objectVersionRepository.DeleteOldest(@object.Id);
+
+            await objectVersionRepository.Create(newVersion);
                     
             //TODO: delete oldest version from disk
             if (bucket.VersioningEnabled)

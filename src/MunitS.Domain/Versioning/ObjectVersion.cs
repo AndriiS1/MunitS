@@ -1,22 +1,19 @@
-using Cassandra;
 namespace MunitS.Domain.Versioning;
 
-public class ObjectVersion(Guid objectId, DateTime uploadTime)
+public class ObjectVersion
 {
-    public Guid Id { get; private init; } = Guid.NewGuid();
-    public Guid ObjectId { get; } = objectId;
-    private DateTime Uploaded { get; } = uploadTime;
-    
-    public static ObjectVersion FromDataInstance(Row row)
+    public const string TableName = "object_versions";
+    public required Guid Id { get; init; }
+    public required Guid ObjectId { get; init; }
+    public required DateTimeOffset UploadedAt { get; init; }
+
+    public static ObjectVersion Create(Guid objectId, DateTimeOffset uploadedAt)
     {
-        return new ObjectVersion(row.GetValue<Guid>(nameof(ObjectId)), row.GetValue<DateTime>(nameof(Uploaded)))
+        return new ObjectVersion
         {
-            Id = row.GetValue<Guid>(nameof(Id)),
+            Id = Guid.NewGuid(),
+            ObjectId = objectId,
+            UploadedAt = uploadedAt
         };
-    }
-    
-    public string ToCreateInstance()
-    {
-        return $"({Id}, {ObjectId}, {Uploaded})";
     }
 }

@@ -1,20 +1,18 @@
 using Cassandra;
-using Microsoft.Extensions.Options;
-using MunitS.Infrastructure.Options.DataBase;
+using Cassandra.Data.Linq;
 namespace MunitS.Infrastructure.Data.Repositories.Bucket;
 
-public class BucketRepository(ISession session, IOptions<DataBaseOptions> options): IBucketRepository
+public class BucketRepository(CassandraConnector connector): IBucketRepository
 {
-    private string Keyspace { get; } = options.Value.KeySpace;
-    private string Table { get; } = options.Value.Tables.Buckets;
+    private readonly Table<Domain.Bucket.Bucket> _buckets = new (connector.GetSession());
+    
     public async Task<Domain.Bucket.Bucket?> Get(string name)
     {
-        var getBucketStatement = await session.PrepareAsync($"SELECT * FROM {Keyspace}.{Table} WHERE {nameof(Domain.Bucket.Bucket.Name)} = ?");
-        
-        var statement = getBucketStatement.Bind(name);
-        
-        var row = (await session.ExecuteAsync(statement)).FirstOrDefault();
-
-        return row == null ? null : Domain.Bucket.Bucket.FromDataInstance(row);
+        return await _buckets.FirstOrDefault(b => b.Name == name).ExecuteAsync();
+    }
+    
+    public async Task Create(Domain.Bucket.Bucket bucket)
+    {
+        await _buckets.Insert(bucket).ExecuteAsync();
     }
 }
