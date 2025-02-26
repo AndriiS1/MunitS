@@ -1,5 +1,4 @@
 using Cassandra.Mapping;
-using MunitS.Domain.Versioning;
 namespace MunitS.Domain.Models;
 
 public class ModelsMapping: Mappings
@@ -30,15 +29,10 @@ public class ModelsMapping: Mappings
             .TableName(Object.Object.TableName)
             .Column(c => c.Id, cm => cm.WithName("id"))
             .Column(c => c.BucketId, cm => cm.WithName("bucket_id"))
+            .Column(c => c.VersionId, cm => cm.WithName("version_id"))
             .Column(c => c.FileKey, cm => cm.WithName("file_key"))
             .Column(c => c.FileName, cm => cm.WithName("file_name"))
-            .PartitionKey(c => c.Id);
-
-        For<ObjectVersion>()
-            .TableName(ObjectVersion.TableName)
-            .Column(c => c.Id, cm => cm.WithName("id"))
-            .Column(c => c.ObjectId, cm => cm.WithName("object_id"))
             .Column(c => c.UploadedAt, cm => cm.WithName("uploaded_at"))
-            .PartitionKey(c => c.Id);
+            .PartitionKey(c => c.FileKey);
     }
 }

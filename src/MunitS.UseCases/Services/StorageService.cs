@@ -1,72 +1,46 @@
 using Grpc.Core;
 using MunitS.Domain.Bucket;
 using MunitS.Domain.Chunk;
-using MunitS.Domain.Versioning;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
 using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object;
-using MunitS.Infrastructure.Data.Repositories.ObjectVersioning;
 using MunitS.Protos;
-using Metadata = MunitS.Domain.Metadata.Metadata;
 using Object = MunitS.Domain.Object.Object;
 namespace MunitS.UseCases.Services;
 
-public class StorageService(IMetadataRepository metadataRepository, IBucketRepository bucketRepository, IObjectRepository objectRepository,
-    IObjectVersionRepository objectVersionRepository) : BlobStorage.BlobStorageBase
+public class StorageService(IMetadataRepository metadataRepository, IBucketRepository bucketRepository, IObjectRepository objectRepository)
+    : BlobStorage.BlobStorageBase
 {
     public override async Task<UploadResponse> UploadFile(UploadRequest request, ServerCallContext context)
     {
-        // await bucketRepository.Create(new Bucket(request.BucketName));
-        
         var bucket = await bucketRepository.Get(request.BucketName);
         
         if(bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {request.BucketName} is not found."));
         
         var bucketDirectory = new BucketDirectory(bucket.Name);
         
-        var @object = await objectRepository.Get(bucket.Id, request.FileKey);
+        var objectVersions = await objectRepository.GetAll(request.FileKey, bucket.Id);
         
-        var uploaded = DateTime.UtcNow;
+        var newObject = Object.Create(bucket.Id, request.FileKey, "new_file.txt", DateTime.UtcNow);
         
-        if (@object is null)
+        if (objectVersions.Count > 0)
         {
-            var newObject = Object.Create(bucket.Id, request.FileKey, "new_file.txt");
-            var newVersion = ObjectVersion.Create(newObject.Id, uploaded);
-
-            await objectVersionRepository.Create(newVersion);
-            
-            await objectRepository.Create(newObject);
-            
-            var objectPath = CreateInitialDirectories(bucketDirectory, newObject.Id, newVersion.Id);
-            
-            //TODO: file chuncking
-        }
-        else
-        {
-            var newVersion = ObjectVersion.Create(@object.Id, uploaded);
-            
-            var objectVersions = await objectVersionRepository.GetAll(@object.Id);
-                
-            var versionsLimitReached = objectVersions.Count >= bucket.VersionsLimit;
-            
-            if (objectVersions.Count == 0) throw new RpcException(new Status(StatusCode.NotFound, $"No versions found for object: {@object.Id}."));
-            
-            await objectVersionRepository.DeleteOldest(@object.Id);
-
-            await objectVersionRepository.Create(newVersion);
-                    
-            //TODO: delete oldest version from disk
             if (bucket.VersioningEnabled)
             {
+                var versionsLimitReached = objectVersions.Count >= bucket.VersionsLimit;
+                
                 if (versionsLimitReached)
                 {
+                    // TODO: delete from disk
                 }
             }
-
-            var objectPath = CreateInitialDirectories(bucketDirectory, @object.Id, newVersion.Id);
-
-            //TODO: file chuncking
+            else
+            {
+                await objectRepository.Delete(request.FileKey, bucket.Id, objectVersions.Last().VersionId);
+            }
         }
+        
+        await objectRepository.Create(newObject);
         
         return new UploadResponse { Status = "Success" };
     }

@@ -7,7 +7,6 @@ using MunitS.Infrastructure.Data;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
 using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object;
-using MunitS.Infrastructure.Data.Repositories.ObjectVersioning;
 using MunitS.Infrastructure.Options.DataBase;
 using MunitS.Infrastructure.Options.Storage;
 namespace MunitS.Infrastructure;
@@ -48,6 +47,5 @@ public static class InfrastructureExtensions
         builder.Services.AddSingleton<IBucketRepository, BucketRepository>();
         builder.Services.AddSingleton<IMetadataRepository, MetadataRepository>();
         builder.Services.AddSingleton<IObjectRepository, ObjectRepository>();
-        builder.Services.AddSingleton<IObjectVersionRepository, ObjectVersionRepository>();
     }
 }

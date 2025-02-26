@@ -1,4 +1,3 @@
-using Cassandra;
 using Cassandra.Data.Linq;
 namespace MunitS.Infrastructure.Data.Repositories.Bucket;
 

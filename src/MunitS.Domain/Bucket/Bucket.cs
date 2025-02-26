@@ -13,7 +13,7 @@ public class Bucket
     {
         return new Bucket
         {
-            Id = new Guid(),
+            Id = Guid.NewGuid(),
             Name = name,
             VersioningEnabled = true,
             VersionsLimit = MaxVersions
