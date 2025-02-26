@@ -3,16 +3,15 @@ using MediatR;
 using MunitS.Domain.Bucket;
 using MunitS.Domain.Chunk;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
-using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object;
 using MunitS.Protos;
 using Object = MunitS.Domain.Object.Object;
-namespace MunitS.UseCases.Commands;
+namespace MunitS.UseCases.Services.Objects.Commands;
 
-public class UploadFileCommandHandler(IMetadataRepository metadataRepository, IBucketRepository bucketRepository,
-    IObjectRepository objectRepository): IRequestHandler<UploadFileCommand, NoContentResponse>
+public class UploadFileCommandHandler(IBucketRepository bucketRepository,
+    IObjectRepository objectRepository): IRequestHandler<UploadFileCommand, ObjectServiceStatusResponse>
 {
-    public async Task<NoContentResponse> Handle(UploadFileCommand command, CancellationToken cancellationToken)
+    public async Task<ObjectServiceStatusResponse> Handle(UploadFileCommand command, CancellationToken cancellationToken)
     {
         var bucket = await bucketRepository.Get(command.Request.BucketName);
         
@@ -43,7 +42,7 @@ public class UploadFileCommandHandler(IMetadataRepository metadataRepository, IB
         
         await objectRepository.Create(newObject);
         
-        return new NoContentResponse { Status = "Success" };
+        return new ObjectServiceStatusResponse { Status = "Success" };
     }
     
     private static ObjectPath CreateInitialDirectories(BucketDirectory bucketDirectory, Guid objectId, Guid versionId)

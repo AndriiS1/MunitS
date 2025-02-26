@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using MunitS.UseCases.Services.Buckets;
-using MunitS.UseCases.Services.Object;
+using MunitS.UseCases.Services.Objects;
 namespace MunitS.UseCases;
 
 public static class UseCasesExtensions

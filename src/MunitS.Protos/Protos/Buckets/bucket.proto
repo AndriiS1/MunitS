@@ -5,8 +5,8 @@ option csharp_namespace = "MunitS.Protos";
 package bucket;
 
 service BucketsService {
-  rpc CreateBucket(CreateBucketRequest) returns (NoContentResponses);
-  rpc DeleteBucket(DeleteBucketRequest) returns (NoContentResponses);
+  rpc CreateBucket(CreateBucketRequest) returns (BucketServiceStatusResponse);
+  rpc DeleteBucket(DeleteBucketRequest) returns (BucketServiceStatusResponse);
   rpc GetBucket(GetBucketRequest) returns (GetBucketResponse);
   rpc GetBuckets(GetBucketsRequest) returns (GetBucketsResponse);
 }
@@ -53,7 +53,7 @@ message GetBucketsResponse {
   repeated BucketResponse content = 2;
 }
 
-// common responses
-message NoContentResponses {
+// Status response
+message BucketServiceStatusResponse {
   string status = 1;
 }
