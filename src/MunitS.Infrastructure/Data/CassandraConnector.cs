@@ -1,11 +1,11 @@
 using Cassandra;
 namespace MunitS.Infrastructure.Data;
 
-public class CassandraHelper
+public class CassandraConnector
 {
     private readonly ISession _session;
 
-    public CassandraHelper(string contactPoints, int port, string keyspace)
+    public CassandraConnector(string contactPoints, int port, string keyspace)
     {
         var cluster = Cluster.Builder()
             .AddContactPoint(contactPoints)

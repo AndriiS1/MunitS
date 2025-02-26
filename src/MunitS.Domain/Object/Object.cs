@@ -1,23 +1,24 @@
-using Cassandra;
 namespace MunitS.Domain.Object;
 
-public class Object(Guid bucketId)
+public class Object
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
-    public Guid BucketId { get; init; } = bucketId;
-    public string FileKey { get; init; } = string.Empty;
-    
-    public static Object FromDataInstance(Row row)
+    public const string TableName = "objects";
+    public required Guid Id { get; init; }
+    public required Guid BucketId { get; init; } 
+    public required Guid VersionId { get; init; } 
+    public required string FileKey { get; init; }
+    public required string FileName { get; init; }
+    public required DateTimeOffset UploadedAt { get; init; }
+    public static Object Create(Guid bucketId, string fileKey, string fileName, DateTimeOffset uploadedAt)
     {
-        return new Object(row.GetValue<Guid>(nameof(BucketId)))
+        return new Object
         {
-            Id = row.GetValue<Guid>(nameof(Id)),
-            FileKey = row.GetValue<string>(nameof(FileKey))
+            Id = Guid.NewGuid(),
+            BucketId = bucketId,
+            FileKey = fileKey,
+            FileName = fileName,
+            UploadedAt = uploadedAt,
+            VersionId = Guid.NewGuid(),
         };
-    }
-
-    public string ToCreateInstance()
-    {
-        return $"({Id}, {BucketId}, {FileKey})";
     }
 }

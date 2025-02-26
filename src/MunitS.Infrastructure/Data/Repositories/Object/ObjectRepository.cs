@@ -1,27 +1,27 @@
-using Cassandra;
-using Microsoft.Extensions.Options;
-using MunitS.Infrastructure.Options.DataBase;
+using Cassandra.Data.Linq;
 namespace MunitS.Infrastructure.Data.Repositories.Object;
 
-public class ObjectRepository(ISession session, IOptions<DataBaseOptions> options): IObjectRepository
+public class ObjectRepository(CassandraConnector connector): IObjectRepository
 {
-    private string Keyspace { get; } = options.Value.KeySpace;
-    private string Table { get; } = options.Value.Tables.Objects;
-    public async Task<Domain.Object.Object?> Get(Guid bucketId, string fileKey)
+    private readonly Table<Domain.Object.Object> _objects = new (connector.GetSession());
+    
+    public async Task<Domain.Object.Object?> Get(string fileKey, Guid bucketId)
     {
-        var getObjectStatement = await session.PrepareAsync($"SELECT * FROM {Keyspace}.{Table} WHERE {nameof(Domain.Object.Object.BucketId)} = ? AND {nameof(Domain.Object.Object.FileKey)} = ?");
-        
-        var statement = getObjectStatement.Bind(bucketId, fileKey);
-        
-        var row = (await session.ExecuteAsync(statement)).FirstOrDefault();
-        
-        return row == null ? null : Domain.Object.Object.FromDataInstance(row);
+        return await _objects.FirstOrDefault(o => o.BucketId == bucketId && o.FileKey == fileKey).ExecuteAsync();
+    }
+    
+    public async Task<List<Domain.Object.Object>> GetAll(string fileKey, Guid bucketId)
+    {
+        return (await _objects.Where(o => o.BucketId == bucketId && o.FileKey == fileKey).ExecuteAsync()).ToList();
+    }
+    
+    public async Task Delete(string fileKey, Guid bucketId, Guid versionId)
+    {
+        await _objects.Where(o => o.FileKey == fileKey && o.BucketId == bucketId && o.VersionId == versionId).Delete().ExecuteAsync();
     }
     
     public async Task Create(Domain.Object.Object @object)
     {
-        var insertQuery = new SimpleStatement($"INSERT INTO {Keyspace}.{Table} (id, name, price) VALUES {@object.ToCreateInstance()}");
-        
-        await session.ExecuteAsync(insertQuery);
+        await _objects.Insert(@object).ExecuteAsync(); 
     }
 }

@@ -1,26 +1,22 @@
-using Cassandra;
 namespace MunitS.Domain.Bucket;
 
-public class Bucket(string name)
+public class Bucket
 {
+    public const string TableName = "buckets";
     private const int MaxVersions = 10;
-    public Guid Id { get; private init; } = Guid.NewGuid();
-    public string Name { get; private init;} = name;
-    public bool VersioningEnabled { get; private init; } = true;
-    public int VersionsLimit { get; private init; } = MaxVersions;
-
-    public static Bucket FromDataInstance(Row row)
-    {
-        return new Bucket(row.GetValue<string>(nameof(Name)))
-        {
-            Id = row.GetValue<Guid>(nameof(Id)),
-            VersioningEnabled = row.GetValue<bool>(nameof(VersioningEnabled)),
-            VersionsLimit = row.GetValue<int>(nameof(VersionsLimit))
-        };
-    }
+    public required Guid Id { get; init; }
+    public required string Name { get; init; }
+    public required bool VersioningEnabled { get; init; }
+    public required int VersionsLimit { get; init; }
     
-    public string ToCreateInstance()
+    public static Bucket Create(string name)
     {
-        return $"({Id}, {Name}, {VersioningEnabled}, {VersionsLimit})";
+        return new Bucket
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            VersioningEnabled = true,
+            VersionsLimit = MaxVersions
+        };
     }
 }
