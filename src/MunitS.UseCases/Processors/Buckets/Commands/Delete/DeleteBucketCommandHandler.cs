@@ -2,7 +2,7 @@ using Grpc.Core;
 using MediatR;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
 using MunitS.Protos;
-namespace MunitS.UseCases.Services.Buckets.Commands.Delete;
+namespace MunitS.UseCases.Processors.Buckets.Commands.Delete;
 
 public class UploadFileCommandHandler(IBucketRepository bucketRepository): IRequestHandler<DeleteBucketCommand, BucketServiceStatusResponse>
 {

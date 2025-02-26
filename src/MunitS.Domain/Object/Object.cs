@@ -9,6 +9,7 @@ public class Object
     public required string FileKey { get; init; }
     public required string FileName { get; init; }
     public required DateTimeOffset UploadedAt { get; init; }
+    public required string UploadStatus { get; init; }
     public static Object Create(Guid bucketId, string fileKey, string fileName, DateTimeOffset uploadedAt)
     {
         return new Object
@@ -19,6 +20,7 @@ public class Object
             FileName = fileName,
             UploadedAt = uploadedAt,
             VersionId = Guid.NewGuid(),
+            UploadStatus = Domain.Object.UploadStatus.Instantiated.ToString(),
         };
     }
 }

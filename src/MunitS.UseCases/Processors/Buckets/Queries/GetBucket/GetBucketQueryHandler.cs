@@ -1,10 +1,9 @@
 using Grpc.Core;
 using MediatR;
-using MunitS.Domain.Bucket;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
 using MunitS.Protos;
-using MunitS.UseCases.Services.Buckets.Mappers;
-namespace MunitS.UseCases.Services.Buckets.Queries.GetBucket;
+using MunitS.UseCases.Processors.Buckets.Mappers;
+namespace MunitS.UseCases.Processors.Buckets.Queries.GetBucket;
 
 public class UploadFileCommandHandler(IBucketRepository bucketRepository): IRequestHandler<GetBucketQuery, GetBucketResponse>
 {

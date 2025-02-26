@@ -1,6 +1,6 @@
 using MunitS.Domain.Bucket;
 using MunitS.Protos;
-namespace MunitS.UseCases.Services.Buckets.Mappers;
+namespace MunitS.UseCases.Processors.Buckets.Mappers;
 
 public static class ResponseMappers
 {

@@ -1,8 +1,8 @@
 using MediatR;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
 using MunitS.Protos;
-using MunitS.UseCases.Services.Buckets.Mappers;
-namespace MunitS.UseCases.Services.Buckets.Queries.GetBuckets;
+using MunitS.UseCases.Processors.Buckets.Mappers;
+namespace MunitS.UseCases.Processors.Buckets.Queries.GetBuckets;
 
 public class UploadFileCommandHandler(IBucketRepository bucketRepository): IRequestHandler<GetBucketsQuery, GetBucketsResponse>
 {

@@ -5,16 +5,29 @@ option csharp_namespace = "MunitS.Protos";
 package object;
 
 service ObjectsService {
-  rpc UploadObject(UploadObjectRequest) returns (ObjectServiceStatusResponse);
+  rpc CreateObject(CreateObjectRequest) returns (ObjectServiceStatusResponse);
+  rpc UploadObject(stream UploadObjectRequest) returns (ObjectServiceStatusResponse);
   rpc DeleteObject(DeleteObjectRequest) returns (ObjectServiceStatusResponse);
+}
+
+// Upload object
+message CreateObjectRequest {
+  string bucketName = 1;
+  string fileKey = 2;
+  string contentType = 3;
 }
 
 // Upload object
 message UploadObjectRequest {
   string bucketName = 1;
   string fileKey = 2;
-  string contentType = 3;
-  bytes data = 4;
+  int64 totalChunks = 3;
+  Chunk chunk = 4;
+}
+
+message Chunk {
+  bytes dataStream = 1;
+  int64 chunkIndex = 3;
 }
 
 // Delete object
@@ -22,7 +35,6 @@ message DeleteObjectRequest {
   string bucketName = 1;
   string fileKey = 2;
 }
-
 
 // Status response
 message ObjectServiceStatusResponse {

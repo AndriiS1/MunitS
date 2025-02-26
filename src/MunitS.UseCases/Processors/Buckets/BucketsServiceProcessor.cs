@@ -1,11 +1,11 @@
 using Grpc.Core;
 using MediatR;
 using MunitS.Protos;
-using MunitS.UseCases.Services.Buckets.Commands.Create;
-using MunitS.UseCases.Services.Buckets.Commands.Delete;
-using MunitS.UseCases.Services.Buckets.Queries.GetBucket;
-using MunitS.UseCases.Services.Buckets.Queries.GetBuckets;
-namespace MunitS.UseCases.Services.Buckets;
+using MunitS.UseCases.Processors.Buckets.Commands.Create;
+using MunitS.UseCases.Processors.Buckets.Commands.Delete;
+using MunitS.UseCases.Processors.Buckets.Queries.GetBucket;
+using MunitS.UseCases.Processors.Buckets.Queries.GetBuckets;
+namespace MunitS.UseCases.Processors.Buckets;
 
 public class BucketsServiceProcessor(IMediator mediator) : BucketsService.BucketsServiceBase
 {
