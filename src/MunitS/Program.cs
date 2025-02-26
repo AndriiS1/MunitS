@@ -10,9 +10,10 @@ public static class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddGrpc();
         builder.ConfigureInfrastructure();
+        builder.ConfigureUseCases();
 
         var app = builder.Build();
-        app.ConfigureUseCases();
+        app.ConfigureServiceProcessors();
         app.Run();
     }
 }
