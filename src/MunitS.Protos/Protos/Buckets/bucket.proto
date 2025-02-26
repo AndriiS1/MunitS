@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+option csharp_namespace = "MunitS.Protos";
+
+package bucket;
+
+service BucketsService {
+  rpc CreateBucket(CreateBucketRequest) returns (NoContentResponses);
+  rpc DeleteBucket(DeleteBucketRequest) returns (NoContentResponses);
+  rpc GetBucket(GetBucketRequest) returns (GetBucketResponse);
+  rpc GetBuckets(GetBucketsRequest) returns (GetBucketsResponse);
+}
+
+// Create
+message CreateBucketRequest {
+  string bucketName = 1;
+  bool versioningEnabled = 2;
+  int32 versions_limit = 3;
+}
+
+
+// Delete bucket 
+message DeleteBucketRequest {
+  string bucketName = 1;
+}
+
+// Get bucket
+message GetBucketRequest {
+  string bucketName = 1;
+}
+
+message GetBucketResponse {
+  string status = 1;
+  BucketResponse content = 2;
+}
+
+message BucketResponse {
+  string id = 1;
+  string name = 2;
+  bool versioningEnabled = 3;
+  int32 versionsLimit = 4;
+  int64 size = 5;
+  int64 objectsCount = 6;
+}
+
+// Get buckets
+message GetBucketsRequest {
+  repeated string bucketNames = 1;
+}
+
+message GetBucketsResponse {
+  string status = 1;
+  repeated BucketResponse content = 2;
+}
+
+// common responses
+message NoContentResponses {
+  string status = 1;
+}

@@ -1,23 +1,24 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using MunitS.UseCases.Services;
+using MunitS.UseCases.Services.Buckets;
+using MunitS.UseCases.Services.Object;
 namespace MunitS.UseCases;
 
 public static class UseCasesExtensions
 {
-    public static void ConfigureUseCases(this WebApplication app)
+    public static void ConfigureServiceProcessors(this WebApplication app)
     {
-        app.ConfigureGrpcServices();
+        app.MapGrpcService<ObjectsServiceProcessor>();
+        app.MapGrpcService<BucketsServiceProcessor>();
     }
     
-    private static void ConfigureGrpcServices(this WebApplication app)
+    public static void ConfigureUseCases(this WebApplicationBuilder builder)
     {
-        app.MapGrpcService<GreeterService>();
-        app.MapGrpcService<StorageService>();
+        builder.Services.AddMediatr();
     }
 
     private static void AddMediatr(this IServiceCollection services)
     {
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<StorageService>());
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<ObjectsServiceProcessor>());
     }
 }
