@@ -15,6 +15,7 @@ message CreateObjectRequest {
   string bucketName = 1;
   string fileKey = 2;
   string contentType = 3;
+  int64 sizeInBytes = 4;
 }
 
 // Upload object

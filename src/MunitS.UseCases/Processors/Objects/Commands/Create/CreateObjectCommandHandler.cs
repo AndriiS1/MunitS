@@ -1,13 +1,17 @@
 using Grpc.Core;
 using MediatR;
+using MunitS.Domain.Division;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
+using MunitS.Infrastructure.Data.Repositories.Division;
 using MunitS.Infrastructure.Data.Repositories.Object;
 using MunitS.Protos;
+using MunitS.UseCases.Processors.Service.PathRetriever;
 using Object = MunitS.Domain.Object.Object;
 namespace MunitS.UseCases.Processors.Objects.Commands.Create;
 
 public class CreateObjectCommandHandler(IBucketRepository bucketRepository,
-    IObjectRepository objectRepository): IRequestHandler<CreateObjectCommand, ObjectServiceStatusResponse>
+    IObjectRepository objectRepository, IDivisionRepository divisionRepository,
+    IPathRetriever pathRetriever): IRequestHandler<CreateObjectCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CreateObjectCommand command, CancellationToken cancellationToken)
     {
@@ -16,8 +20,19 @@ public class CreateObjectCommandHandler(IBucketRepository bucketRepository,
         if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {command.Request.BucketName} is not found."));
         
         var objectVersions = await objectRepository.GetAll(command.Request.FileKey, bucket.Id);
+
+        var divisionType = new DivisionType(command.Request.SizeInBytes);
+        var division = await divisionRepository.GetNotFull(command.Request.BucketName, divisionType);
+
+        if (division == null)
+        {
+            division = Division.Create(command.Request.BucketName, divisionType, pathRetriever.GetBucketDirectory(bucket));
+            
+            Directory.CreateDirectory(division.DivisionPath);  
+        }
         
-        var newObject = Object.Create(bucket.Id, command.Request.FileKey, "new_file.txt", DateTime.UtcNow);
+        var newObject = Object.Create(bucket.Id, command.Request.FileKey, "new_file.txt", division.Name, 
+            DateTime.UtcNow, new DivisionDirectory(pathRetriever.GetBucketDirectory(bucket), division.Name, division.Type));
         
         if (objectVersions.Count > 0)
         {
@@ -27,7 +42,8 @@ public class CreateObjectCommandHandler(IBucketRepository bucketRepository,
                 
                 if (versionsLimitReached)
                 {
-                    // TODO: delete from disk
+                    await objectRepository.Delete(command.Request.FileKey, bucket.Id, objectVersions.Last().VersionId);
+                    Directory.Delete(objectVersions.Last().ObjectPath);
                 }
             }
             else
@@ -37,24 +53,8 @@ public class CreateObjectCommandHandler(IBucketRepository bucketRepository,
         }
         
         await objectRepository.Create(newObject);
+        Directory.CreateDirectory(newObject.ObjectPath);
         
         return new ObjectServiceStatusResponse { Status = "Success" };
     }
-    
-    // private static ObjectPath CreateInitialDirectories(BucketDirectory bucketDirectory, Guid objectId, Guid versionId)
-    // {
-    //     var objectDirectory = new ObjectDirectory(bucketDirectory, objectId);
-    //     var versionedObjectDirectory = new VersionedObjectDirectory(objectDirectory, versionId);
-    //     var objectPath = new ObjectPath(versionedObjectDirectory);
-    //
-    //     if (!Directory.Exists(objectDirectory.Value))
-    //     {
-    //         Directory.CreateDirectory(objectDirectory.Value);  
-    //     }
-    //
-    //     Directory.CreateDirectory(versionedObjectDirectory.Value);
-    //     Directory.CreateDirectory(objectPath.Value);
-    //
-    //     return objectPath;
-    // }
 }

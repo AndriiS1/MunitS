@@ -32,11 +32,11 @@ public class UploadFileCommandHandler(IOptions<StorageOptions> storageOptions, I
         
         await bucketRepository.Create(bucket);
         
-        var objectDirectory = new BucketDirectory(storageOptions.Value.RootDirectory, command.Request.BucketName);
+        var bucketDirectory = new BucketDirectory(storageOptions.Value.RootDirectory, bucket);
         
-        if (!Directory.Exists(objectDirectory.Value))
+        if (!Directory.Exists(bucketDirectory.Value))
         {
-            Directory.CreateDirectory(objectDirectory.Value);  
+            Directory.CreateDirectory(bucketDirectory.Value);  
         }
         
         return new BucketServiceStatusResponse { Status = "Success" };

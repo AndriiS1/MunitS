@@ -1,17 +1,13 @@
 using Grpc.Core;
 using MediatR;
-using Microsoft.Extensions.Options;
-using MunitS.Domain.Bucket;
-using MunitS.Domain.Chunk;
 using MunitS.Domain.Object;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
 using MunitS.Infrastructure.Data.Repositories.Object;
-using MunitS.Infrastructure.Options.Storage;
 using MunitS.Protos;
 using static System.Enum;
 namespace MunitS.UseCases.Processors.Objects.Commands.Upload;
 
-public class UploadObjectCommandHandler(IOptions<StorageOptions> options, IBucketRepository bucketRepository,
+public class UploadObjectCommandHandler(IBucketRepository bucketRepository,
     IObjectRepository objectRepository): IRequestHandler<UploadObjectCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(UploadObjectCommand command, CancellationToken cancellationToken)
@@ -45,16 +41,10 @@ public class UploadObjectCommandHandler(IOptions<StorageOptions> options, IBucke
                         throw new RpcException(new Status(StatusCode.NotFound, $"Object is not created."));
                     }
 
-                    var objectId = objectVersions.Last().Id;
-                    var versionId = objectVersions.Last().VersionId;
-
-                    var bucketDirectory = new BucketDirectory(options.Value.RootDirectory, bucket.Name);
-
                     fileName = uploadObjectRequest.FileKey;
                     totalChunks = uploadObjectRequest.TotalChunks;
-
-                    var uploadPath = CreateInitialDirectories(bucketDirectory, objectId, versionId);
-                    fileStream = new FileStream($"{uploadPath.Value}/data.txt", FileMode.Create, FileAccess.Write);
+                    
+                    fileStream = new FileStream($"{objectVersions.Last().ObjectPath}/data.txt", FileMode.Create, FileAccess.Write);
                 }
 
                 if (uploadObjectRequest.FileKey != fileName || uploadObjectRequest.TotalChunks != totalChunks)
@@ -74,22 +64,5 @@ public class UploadObjectCommandHandler(IOptions<StorageOptions> options, IBucke
         }
         
         return new ObjectServiceStatusResponse {Status = "Success"};
-    }
-    
-    private static ObjectPath CreateInitialDirectories(BucketDirectory bucketDirectory, Guid objectId, Guid versionId)
-    {
-        var objectDirectory = new ObjectDirectory(bucketDirectory, objectId);
-        var versionedObjectDirectory = new VersionedObjectDirectory(objectDirectory, versionId);
-        var objectPath = new ObjectPath(versionedObjectDirectory);
-
-        if (!Directory.Exists(objectDirectory.Value))
-        {
-            Directory.CreateDirectory(objectDirectory.Value);  
-        }
-
-        Directory.CreateDirectory(versionedObjectDirectory.Value);
-        Directory.CreateDirectory(objectPath.Value);
-
-        return objectPath;
     }
 }
