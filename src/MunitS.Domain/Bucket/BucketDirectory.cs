@@ -1,6 +1,6 @@
 namespace MunitS.Domain.Bucket;
 
-public class BucketDirectory(string name)
+public class BucketDirectory(string rootPath, Bucket bucket)
 {
-    public string Value { get; } = $"{name}";
+    public string Value { get; } = $"{rootPath}/{bucket.Name}";
 }

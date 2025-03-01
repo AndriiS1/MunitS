@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using MunitS.UseCases.Services.Buckets;
-using MunitS.UseCases.Services.Objects;
+using MunitS.UseCases.Processors.Buckets;
+using MunitS.UseCases.Processors.Objects;
+using MunitS.UseCases.Processors.Service.Compression;
+using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases;
 
 public static class UseCasesExtensions
@@ -15,6 +17,8 @@ public static class UseCasesExtensions
     public static void ConfigureUseCases(this WebApplicationBuilder builder)
     {
         builder.Services.AddMediatr();
+        builder.Services.AddSingleton<IPathRetriever, PathRetriever>();
+        builder.Services.AddScoped<ICompressionService, CompressionService>();
     }
 
     private static void AddMediatr(this IServiceCollection services)

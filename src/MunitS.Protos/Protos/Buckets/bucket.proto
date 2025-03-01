@@ -18,7 +18,6 @@ message CreateBucketRequest {
   int32 versions_limit = 3;
 }
 
-
 // Delete bucket 
 message DeleteBucketRequest {
   string bucketName = 1;

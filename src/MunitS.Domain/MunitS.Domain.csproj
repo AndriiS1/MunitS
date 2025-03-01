@@ -10,4 +10,8 @@
       <PackageReference Include="CassandraCSharpDriver" Version="3.22.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Chunk\" />
+    </ItemGroup>
+
 </Project>

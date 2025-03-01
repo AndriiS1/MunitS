@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MunitS.Domain.Models;
 using MunitS.Infrastructure.Data;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
+using MunitS.Infrastructure.Data.Repositories.Division;
 using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object;
 using MunitS.Infrastructure.Options.DataBase;
@@ -47,5 +48,6 @@ public static class InfrastructureExtensions
         builder.Services.AddSingleton<IBucketRepository, BucketRepository>();
         builder.Services.AddSingleton<IMetadataRepository, MetadataRepository>();
         builder.Services.AddSingleton<IObjectRepository, ObjectRepository>();
+        builder.Services.AddSingleton<IDivisionRepository, DivisionRepository>();
     }
 }

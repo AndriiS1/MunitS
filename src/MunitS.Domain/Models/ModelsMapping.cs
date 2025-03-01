@@ -11,7 +11,21 @@ public class ModelsMapping: Mappings
             .Column(c => c.Id, cm => cm.WithName("id"))
             .Column(c => c.Name, cm => cm.WithName("name"))
             .Column(c => c.VersioningEnabled, cm => cm.WithName("versioning_enabled"))
-            .Column(c => c.VersionsLimit, cm => cm.WithName("versions_limit"));
+            .Column(c => c.VersionsLimit, cm => cm.WithName("versions_limit"))
+            .Column(c => c.ObjectsCount, cm => cm.WithName("objects_count"))
+            .Column(c => c.SizeInBytes, cm => cm.WithName("size_in_bytes"));
+        
+        For<Division.Division>()
+            .PartitionKey(c => c.BucketName)
+            .PartitionKey(c => c.Type)
+            .Column(c => c.BucketName, cm => cm.WithName("bucket_name"))
+            .Column(c => c.Type, cm => cm.WithName("type"))
+            .Column(c => c.Name, cm => cm.WithName("name"))
+            .Column(c => c.Id, cm => cm.WithName("id"))
+            .Column(c => c.ObjectsCount, cm => cm.WithName("objects_count"))
+            .Column(c => c.ObjectsLimit, cm => cm.WithName("objects_limit"))
+            .Column(c => c.Path, cm => cm.WithName("path"))
+            .TableName(Division.Division.TableName);
         
         For<Metadata.Metadata>()
             .Column(c => c.VersionId, cm => cm.WithName("version_id"))
@@ -33,6 +47,8 @@ public class ModelsMapping: Mappings
             .Column(c => c.FileKey, cm => cm.WithName("file_key"))
             .Column(c => c.FileName, cm => cm.WithName("file_name"))
             .Column(c => c.UploadedAt, cm => cm.WithName("uploaded_at"))
+            .Column(c => c.UploadStatus, cm => cm.WithName("upload_status"))
+            .Column(c => c.Path, cm => cm.WithName("path"))
             .PartitionKey(c => c.FileKey);
     }
 }
