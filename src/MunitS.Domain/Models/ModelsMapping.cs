@@ -22,10 +22,10 @@ public class ModelsMapping: Mappings
             .Column(c => c.Type, cm => cm.WithName("type"))
             .Column(c => c.Name, cm => cm.WithName("name"))
             .Column(c => c.Id, cm => cm.WithName("id"))
-            .Column(c => c.ObjectsAmount, cm => cm.WithName("objects_amount"))
-            .Column(c => c.ObjectsAmountLimit, cm => cm.WithName("objects_amount_limit"))
-            .Column(c => c.DivisionPath, cm => cm.WithName("division_path"))
-            .TableName(Metadata.Metadata.TableName);
+            .Column(c => c.ObjectsCount, cm => cm.WithName("objects_count"))
+            .Column(c => c.ObjectsLimit, cm => cm.WithName("objects_limit"))
+            .Column(c => c.Path, cm => cm.WithName("path"))
+            .TableName(Division.Division.TableName);
         
         For<Metadata.Metadata>()
             .Column(c => c.VersionId, cm => cm.WithName("version_id"))
@@ -48,7 +48,7 @@ public class ModelsMapping: Mappings
             .Column(c => c.FileName, cm => cm.WithName("file_name"))
             .Column(c => c.UploadedAt, cm => cm.WithName("uploaded_at"))
             .Column(c => c.UploadStatus, cm => cm.WithName("upload_status"))
-            .Column(c => c.ObjectPath, cm => cm.WithName("object_path"))
+            .Column(c => c.Path, cm => cm.WithName("path"))
             .PartitionKey(c => c.FileKey);
     }
 }

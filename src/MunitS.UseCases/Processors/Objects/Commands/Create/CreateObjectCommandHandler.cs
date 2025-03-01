@@ -28,11 +28,11 @@ public class CreateObjectCommandHandler(IBucketRepository bucketRepository,
         {
             division = Division.Create(command.Request.BucketName, divisionType, pathRetriever.GetBucketDirectory(bucket));
             
-            Directory.CreateDirectory(division.DivisionPath);  
+            Directory.CreateDirectory(division.Path);  
         }
         
-        var newObject = Object.Create(bucket.Id, command.Request.FileKey, "new_file.txt", division.Name, 
-            DateTime.UtcNow, new DivisionDirectory(pathRetriever.GetBucketDirectory(bucket), division.Name, division.Type));
+        var newObject = Object.Create(bucket.Id, command.Request.FileKey, "new_file.txt", 
+            DateTime.UtcNow, new DivisionDirectory(pathRetriever.GetBucketDirectory(bucket), division.Name, division.GetSizeType()));
         
         if (objectVersions.Count > 0)
         {
@@ -43,7 +43,7 @@ public class CreateObjectCommandHandler(IBucketRepository bucketRepository,
                 if (versionsLimitReached)
                 {
                     await objectRepository.Delete(command.Request.FileKey, bucket.Id, objectVersions.Last().VersionId);
-                    Directory.Delete(objectVersions.Last().ObjectPath);
+                    Directory.Delete(objectVersions.Last().Path);
                 }
             }
             else
@@ -53,7 +53,7 @@ public class CreateObjectCommandHandler(IBucketRepository bucketRepository,
         }
         
         await objectRepository.Create(newObject);
-        Directory.CreateDirectory(newObject.ObjectPath);
+        Directory.CreateDirectory(newObject.Path);
         
         return new ObjectServiceStatusResponse { Status = "Success" };
     }

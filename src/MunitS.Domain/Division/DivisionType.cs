@@ -10,14 +10,14 @@ public record DivisionType
         Small
     }
     public SizeType Type { get; private set; }
-    public int ObjectsAmountLimit { get; private set; }
+    public long ObjectsCountLimit { get; private set; }
     
-    private const int LargeLimit = 10000;
-    private const int MediumLimit = 1000;
-    private const int SmallLimit = 100;
+    private const long LargeLimit = 10000;
+    private const long MediumLimit = 1000;
+    private const long SmallLimit = 100;
     
-    private const int LargeObjectSizeInBytesLimit = 10000000;
-    private const int MediumObjectSizeInBytesLimit = 100000000;
+    private const long LargeObjectSizeInBytesLimit = 10000000;
+    private const long MediumObjectSizeInBytesLimit = 100000000;
 
     public static string GetSizeTypePrefix(SizeType sizeType)
     {
@@ -39,7 +39,7 @@ public record DivisionType
         };
         
         Type = typeData.Item1;
-        ObjectsAmountLimit = typeData.Item2;
+        ObjectsCountLimit = typeData.Item2;
     }
     
     public DivisionType(SizeType sizeType)
@@ -52,6 +52,6 @@ public record DivisionType
         };
         
         Type = sizeType;
-        ObjectsAmountLimit = objectLimit;
+        ObjectsCountLimit = objectLimit;
     }
 };

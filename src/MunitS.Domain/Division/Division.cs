@@ -3,14 +3,19 @@ namespace MunitS.Domain.Division;
 
 public class Division
 {
-    public const string TableName = "division";
+    public const string TableName = "divisions";
     public required string BucketName { get; init; }
-    public required DivisionType.SizeType Type { get; init; }
+    public required string Type { get; init; }
     public required string Name { get; init; }
     public required Guid Id { get; init; }
-    public required int ObjectsAmount { get; init; }
-    public required int ObjectsAmountLimit { get; init; }
-    public required string DivisionPath { get; init; }
+    public required long ObjectsCount { get; init; }
+    public required long ObjectsLimit { get; init; }
+    public required string Path { get; init; }
+
+    public DivisionType.SizeType GetSizeType()
+    {
+        return Enum.Parse<DivisionType.SizeType>(Type);
+    }
     
     public static Division Create(string bucketName, DivisionType divisionType, BucketDirectory bucketDirectory)
     {
@@ -21,10 +26,10 @@ public class Division
             Id = id,
             Name = name,
             BucketName = bucketName,
-            ObjectsAmountLimit = divisionType.ObjectsAmountLimit,
-            Type = divisionType.Type,
-            ObjectsAmount = 0,
-            DivisionPath = new DivisionDirectory(bucketDirectory, name, divisionType.Type).Value
+            ObjectsLimit = divisionType.ObjectsCountLimit,
+            Type = divisionType.Type.ToString(),
+            ObjectsCount = 0,
+            Path = new DivisionDirectory(bucketDirectory, name, divisionType.Type).Value
         };
     }
 }

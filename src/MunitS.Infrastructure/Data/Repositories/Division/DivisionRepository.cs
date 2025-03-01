@@ -13,7 +13,8 @@ public class DivisionRepository(CassandraConnector connector) : IDivisionReposit
     
     public async Task<Domain.Division.Division?> GetNotFull(string bucketName, DivisionType divisionType)
     {
-        return await _divisions.FirstOrDefault(d => d.BucketName == bucketName 
-                                              && d.Type == divisionType.Type && d.ObjectsAmountLimit < divisionType.ObjectsAmountLimit).ExecuteAsync();
+        return (await _divisions.Where(d => d.BucketName == bucketName 
+                                              && d.Type == divisionType.Type.ToString() && d.ObjectsCount < divisionType.ObjectsCountLimit)
+            .AllowFiltering().ExecuteAsync()).FirstOrDefault();
     }
 }
