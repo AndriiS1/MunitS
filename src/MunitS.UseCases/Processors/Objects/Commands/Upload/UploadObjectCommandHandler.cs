@@ -55,7 +55,7 @@ public class UploadObjectCommandHandler(IBucketRepository bucketRepository,
                 
                 var compressedChunk = compressionService.CompressChunk(uploadObjectRequest.Chunk.DataStream.ToArray());
                 
-                await fileStream!.WriteAsync(compressedChunk.AsMemory(0, uploadObjectRequest.Chunk.DataStream.Length), cancellationToken);
+                await fileStream!.WriteAsync(compressedChunk.AsMemory(0, compressedChunk.Length), cancellationToken);
                 currentChunkIndex++;
             }
 

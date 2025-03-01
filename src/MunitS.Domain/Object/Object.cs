@@ -4,7 +4,7 @@ namespace MunitS.Domain.Object;
 public class Object
 {
     public const string TableName = "objects";
-    private const string CompressionExtension = "zst";
+    private const string CompressionExtension = "gzip";
     public required Guid Id { get; init; }
     public required Guid BucketId { get; init; }
     public required Guid VersionId { get; init; }
