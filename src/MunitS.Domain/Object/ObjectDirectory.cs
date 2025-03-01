@@ -1,5 +1,5 @@
 using MunitS.Domain.Division;
-namespace MunitS.Domain.Chunk;
+namespace MunitS.Domain.Object;
 
 public class ObjectDirectory(DivisionDirectory divisionDirectory, Guid objectId, Guid versionId)
 {

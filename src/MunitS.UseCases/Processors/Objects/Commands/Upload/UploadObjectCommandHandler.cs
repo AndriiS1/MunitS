@@ -4,11 +4,12 @@ using MunitS.Domain.Object;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
 using MunitS.Infrastructure.Data.Repositories.Object;
 using MunitS.Protos;
+using MunitS.UseCases.Processors.Service.Compression;
 using static System.Enum;
 namespace MunitS.UseCases.Processors.Objects.Commands.Upload;
 
 public class UploadObjectCommandHandler(IBucketRepository bucketRepository,
-    IObjectRepository objectRepository): IRequestHandler<UploadObjectCommand, ObjectServiceStatusResponse>
+    IObjectRepository objectRepository, ICompressionService compressionService): IRequestHandler<UploadObjectCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(UploadObjectCommand command, CancellationToken cancellationToken)
     {
@@ -33,10 +34,8 @@ public class UploadObjectCommandHandler(IBucketRepository bucketRepository,
                     {
                         throw new RpcException(new Status(StatusCode.NotFound, $"Object is not created."));
                     }
-
-                    var uploadStatusParseSucceeded = TryParse<UploadStatus>(objectVersions.Last().UploadStatus, out var uploadStatus);
-
-                    if (!uploadStatusParseSucceeded || uploadStatus != UploadStatus.Instantiated)
+                    
+                    if (Parse<UploadStatus>(objectVersions.Last().UploadStatus) != UploadStatus.Instantiated)
                     {
                         throw new RpcException(new Status(StatusCode.NotFound, $"Object is not created."));
                     }
@@ -44,15 +43,19 @@ public class UploadObjectCommandHandler(IBucketRepository bucketRepository,
                     fileName = uploadObjectRequest.FileKey;
                     totalChunks = uploadObjectRequest.TotalChunks;
                     
-                    fileStream = new FileStream($"{objectVersions.Last().Path}/data.txt", FileMode.Create, FileAccess.Write);
+                    fileStream = new FileStream(objectVersions.Last().GetObjectDataPath(), FileMode.Create, FileAccess.Write);
                 }
 
                 if (uploadObjectRequest.FileKey != fileName || uploadObjectRequest.TotalChunks != totalChunks)
                 {
-                    //TODO: abort
+                    File.Delete(fileStream!.Name);
+                    
+                    throw new RpcException(new Status(StatusCode.Cancelled, $"Chuck id data was changed mid upload."));
                 }
                 
-                await fileStream!.WriteAsync(uploadObjectRequest.Chunk.DataStream.ToArray().AsMemory(0, uploadObjectRequest.Chunk.DataStream.Length), cancellationToken);
+                var compressedChunk = compressionService.CompressChunk(uploadObjectRequest.Chunk.DataStream.ToArray());
+                
+                await fileStream!.WriteAsync(compressedChunk.AsMemory(0, uploadObjectRequest.Chunk.DataStream.Length), cancellationToken);
                 currentChunkIndex++;
             }
 

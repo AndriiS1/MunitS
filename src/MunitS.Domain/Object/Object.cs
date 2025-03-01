@@ -1,10 +1,10 @@
-using MunitS.Domain.Chunk;
 using MunitS.Domain.Division;
 namespace MunitS.Domain.Object;
 
 public class Object
 {
     public const string TableName = "objects";
+    private const string CompressionExtension = "zst";
     public required Guid Id { get; init; }
     public required Guid BucketId { get; init; }
     public required Guid VersionId { get; init; }
@@ -28,5 +28,10 @@ public class Object
             Path = new ObjectDirectory(divisionDirectory, id, versionId).Value,
             UploadStatus = Domain.Object.UploadStatus.Instantiated.ToString(),
         };
+    }
+
+    public string GetObjectDataPath()
+    {
+        return $"{Path}/{Id}.{VersionId}.{CompressionExtension}";
     }
 }
