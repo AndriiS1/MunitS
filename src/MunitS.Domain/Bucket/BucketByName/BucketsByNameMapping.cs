@@ -10,6 +10,7 @@ public class BucketsByNameMapping : Mappings
         For<BucketByName>()
             .TableName(TableName)
             .PartitionKey(c => c.Name)
+            .Column(c => c.Name, cm => cm.WithName("name"))
             .Column(c => c.Id, cm => cm.WithName("id"));
     }
 }

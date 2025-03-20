@@ -9,6 +9,7 @@ service BucketsService {
   rpc DeleteBucket(DeleteBucketRequest) returns (BucketServiceStatusResponse);
   rpc GetBucket(GetBucketRequest) returns (GetBucketResponse);
   rpc GetBuckets(GetBucketsRequest) returns (GetBucketsResponse);
+  rpc BucketExistsCheck(BucketExistsCheckRequest) returns (BucketExistsResponse);
 }
 
 // Create
@@ -54,6 +55,16 @@ message GetBucketsRequest {
 message GetBucketsResponse {
   string status = 1;
   repeated BucketResponse content = 2;
+}
+
+// Check if exists
+message BucketExistsCheckRequest {
+  string bucketName = 1;
+}
+
+message BucketExistsResponse {
+  string status = 1;
+  bool exists = 2;
 }
 
 // Status response
