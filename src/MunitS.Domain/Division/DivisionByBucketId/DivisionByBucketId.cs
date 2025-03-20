@@ -1,10 +1,9 @@
-using MunitS.Domain.Bucket;
-namespace MunitS.Domain.Division;
+using MunitS.Domain.Bucket.BucketById;
+namespace MunitS.Domain.Division.DivisionByBucketId;
 
-public class Division
+public class DivisionByBucketId
 {
-    public const string TableName = "divisions";
-    public required string BucketName { get; init; }
+    public required Guid BucketId { get; init; }
     public required string Type { get; init; }
     public required string Name { get; init; }
     public required Guid Id { get; init; }
@@ -17,15 +16,15 @@ public class Division
         return Enum.Parse<DivisionType.SizeType>(Type);
     }
     
-    public static Division Create(string bucketName, DivisionType divisionType, BucketDirectory bucketDirectory)
+    public static DivisionByBucketId Create(Guid bucketId, DivisionType divisionType, BucketDirectory bucketDirectory)
     {
         var id = Guid.NewGuid();
         var name = $"division-{id}";
-        return new Division
+        return new DivisionByBucketId
         {
             Id = id,
             Name = name,
-            BucketName = bucketName,
+            BucketId = bucketId,
             ObjectsLimit = divisionType.ObjectsCountLimit,
             Type = divisionType.Type.ToString(),
             ObjectsCount = 0,

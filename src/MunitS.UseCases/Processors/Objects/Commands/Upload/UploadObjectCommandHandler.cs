@@ -1,14 +1,14 @@
 using Grpc.Core;
 using MediatR;
-using MunitS.Domain.Object;
-using MunitS.Infrastructure.Data.Repositories.Bucket;
+using MunitS.Domain.Object.ObjectByFileKey;
+using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Service.Compression;
 using static System.Enum;
 namespace MunitS.UseCases.Processors.Objects.Commands.Upload;
 
-public class UploadObjectCommandHandler(IBucketRepository bucketRepository,
+public class UploadObjectCommandHandler(IBucketByIdRepository bucketByIdRepository,
     IObjectRepository objectRepository, ICompressionService compressionService): IRequestHandler<UploadObjectCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(UploadObjectCommand command, CancellationToken cancellationToken)
@@ -24,9 +24,9 @@ public class UploadObjectCommandHandler(IBucketRepository bucketRepository,
             {
                 if (currentChunkIndex == 0)
                 {
-                    var bucket = await bucketRepository.Get(uploadObjectRequest.BucketName);
+                    var bucket = await bucketByIdRepository.Get(new Guid(uploadObjectRequest.BucketId));
 
-                    if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {uploadObjectRequest.BucketName} is not found."));
+                    if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {uploadObjectRequest.BucketId} is not found."));
 
                     var objectVersions = await objectRepository.GetAll(uploadObjectRequest.FileKey, bucket.Id);
 

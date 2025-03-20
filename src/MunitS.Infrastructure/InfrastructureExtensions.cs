@@ -2,9 +2,14 @@ using Cassandra.Mapping;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MunitS.Domain.Models;
+using MunitS.Domain.Bucket.BucketById;
+using MunitS.Domain.Bucket.BucketByName;
+using MunitS.Domain.Division.DivisionByBucketId;
+using MunitS.Domain.Metadata.MedataByObjectId;
+using MunitS.Domain.Object.ObjectByFileKey;
 using MunitS.Infrastructure.Data;
 using MunitS.Infrastructure.Data.Repositories.Bucket;
+using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Division;
 using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object;
@@ -40,12 +45,16 @@ public static class InfrastructureExtensions
             options.KeySpace
         ));
         
-        MappingConfiguration.Global.Define<ModelsMapping>();
+        MappingConfiguration.Global.Define<BucketsByIdMapping>();
+        MappingConfiguration.Global.Define<BucketsByNameMapping>();
+        MappingConfiguration.Global.Define<DivisionsByBucketIdMapping>();
+        MappingConfiguration.Global.Define<MetadataByObjectIdMapping>();
+        MappingConfiguration.Global.Define<ObjectsByFileKeyMapping>();
     }
 
     private static void ConfigureRepositories(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton<IBucketRepository, BucketRepository>();
+        builder.Services.AddSingleton<IBucketByIdRepository, BucketByIdByIdRepository>();
         builder.Services.AddSingleton<IMetadataRepository, MetadataRepository>();
         builder.Services.AddSingleton<IObjectRepository, ObjectRepository>();
         builder.Services.AddSingleton<IDivisionRepository, DivisionRepository>();

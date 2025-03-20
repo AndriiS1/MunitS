@@ -1,5 +1,5 @@
-using MunitS.Domain.Bucket;
-namespace MunitS.Domain.Division;
+using MunitS.Domain.Bucket.BucketById;
+namespace MunitS.Domain.Division.DivisionByBucketId;
 
 public class DivisionDirectory(BucketDirectory bucketDirectory, string divisionName, DivisionType.SizeType divisionSizeType)
 {

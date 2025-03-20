@@ -1,23 +1,25 @@
 using Grpc.Core;
 using MediatR;
-using MunitS.Infrastructure.Data.Repositories.Bucket;
+using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
+using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByNameRepository;
 using MunitS.Protos;
 namespace MunitS.UseCases.Processors.Buckets.Commands.Delete;
 
-public class UploadFileCommandHandler(IBucketRepository bucketRepository): IRequestHandler<DeleteBucketCommand, BucketServiceStatusResponse>
+public class UploadFileCommandHandler(IBucketByIdRepository bucketByIdRepository, IBucketByNameRepository bucketByNameRepository): IRequestHandler<DeleteBucketCommand, BucketServiceStatusResponse>
 {
     public async Task<BucketServiceStatusResponse> Handle(DeleteBucketCommand command, CancellationToken cancellationToken)
     {
-        var bucket = await bucketRepository.Get(command.Request.BucketName);
+        var bucket = await bucketByIdRepository.Get(new Guid(command.Request.Id));
 
-        if (bucket != null)
+        if (bucket == null)
         {
             throw new RpcException(
-                new Status(StatusCode.NotFound, $"Bucket {command.Request.BucketName} does not exists.")
+                new Status(StatusCode.NotFound, $"Bucket {command.Request.Id} does not exists.")
             );
         }
         
-        await bucketRepository.Delete(command.Request.BucketName);
+        await bucketByIdRepository.Delete(bucket.Id);
+        await bucketByNameRepository.Delete(bucket.Name);
         
         return new BucketServiceStatusResponse { Status = "Success" };
     }

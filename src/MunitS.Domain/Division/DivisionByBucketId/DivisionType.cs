@@ -1,5 +1,4 @@
-namespace MunitS.Domain.Division;
-
+namespace MunitS.Domain.Division.DivisionByBucketId;
 
 public record DivisionType
 {

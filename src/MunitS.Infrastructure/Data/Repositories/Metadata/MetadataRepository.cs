@@ -5,10 +5,10 @@ namespace MunitS.Infrastructure.Data.Repositories.Metadata;
 public class MetadataRepository(CassandraConnector connector) : IMetadataRepository
 {
     
-    private readonly Table<Domain.Metadata.Metadata> _metadata = new (connector.GetSession());
+    private readonly Table<Domain.Metadata.MedataByObjectId.MetadataByObjectId> _metadata = new (connector.GetSession());
     
-    public void Create(Domain.Metadata.Metadata metadata)
+    public void Create(Domain.Metadata.MedataByObjectId.MetadataByObjectId metadataByObjectId)
     {
-        _metadata.Insert(metadata);
+        _metadata.Insert(metadataByObjectId);
     }
 }

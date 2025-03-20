@@ -1,21 +1,22 @@
-namespace MunitS.Domain.Metadata;
+namespace MunitS.Domain.Metadata.MedataByObjectId;
 
-public class Metadata
+public class MetadataByObjectId
 {
-    public const string TableName = "metadata";
+    public required Guid BucketId { get; init; }
     public required Guid VersionId { get; init; }
     public required Guid ObjectId { get; init; }
     public required string ContentType { get; init; }
     public required long SizeInBytes { get; init; }
-    public required bool IsDeleted { get; init; } = false;
+    public required bool IsDeleted { get; init; }
     public required Dictionary<string, string> CustomMetadata { get; init; }
     public required Dictionary<string, string> Tags { get; init; }
     public required Dictionary<string, string> SearchableKeywords { get; init; }
     
-    public static Metadata Create(Guid versionId, Guid objectId, string contentType, long sizeInBytes)
+    public static MetadataByObjectId Create(Guid bucketId, Guid versionId, Guid objectId, string contentType, long sizeInBytes)
     {
-        return new Metadata
+        return new MetadataByObjectId
         {
+            BucketId = bucketId,
             VersionId = versionId,
             ObjectId = objectId,
             ContentType = contentType,

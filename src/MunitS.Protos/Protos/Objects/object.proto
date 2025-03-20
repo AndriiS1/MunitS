@@ -12,7 +12,7 @@ service ObjectsService {
 
 // Upload object
 message CreateObjectRequest {
-  string bucketName = 1;
+  string bucketId = 1;
   string fileKey = 2;
   string contentType = 3;
   int64 sizeInBytes = 4;
@@ -20,7 +20,7 @@ message CreateObjectRequest {
 
 // Upload object
 message UploadObjectRequest {
-  string bucketName = 1;
+  string bucketId = 1;
   string fileKey = 2;
   int64 totalChunks = 3;
   Chunk chunk = 4;
@@ -33,7 +33,7 @@ message Chunk {
 
 // Delete object
 message DeleteObjectRequest {
-  string bucketName = 1;
+  string bucketId = 1;
   string fileKey = 2;
 }
 

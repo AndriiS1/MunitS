@@ -1,5 +1,5 @@
-using MunitS.Domain.Division;
-namespace MunitS.Domain.Object;
+using MunitS.Domain.Division.DivisionByBucketId;
+namespace MunitS.Domain.Object.ObjectByFileKey;
 
 public class ObjectDirectory(DivisionDirectory divisionDirectory, Guid objectId, Guid versionId)
 {

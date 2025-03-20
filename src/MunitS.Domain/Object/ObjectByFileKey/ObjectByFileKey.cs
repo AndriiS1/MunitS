@@ -1,7 +1,7 @@
-using MunitS.Domain.Division;
-namespace MunitS.Domain.Object;
+using MunitS.Domain.Division.DivisionByBucketId;
+namespace MunitS.Domain.Object.ObjectByFileKey;
 
-public class Object
+public class ObjectByFileKey
 {
     public const string TableName = "objects";
     private const string CompressionExtension = "gzip";
@@ -13,11 +13,11 @@ public class Object
     public required DateTimeOffset UploadedAt { get; init; }
     public required string UploadStatus { get; init; }
     public required string Path { get; init; }
-    public static Object Create(Guid bucketId, string fileKey, string fileName, DateTimeOffset uploadedAt, DivisionDirectory divisionDirectory)
+    public static ObjectByFileKey Create(Guid bucketId, string fileKey, string fileName, DateTimeOffset uploadedAt, DivisionDirectory divisionDirectory)
     {
         var id = Guid.NewGuid();
         var versionId = Guid.NewGuid();
-        return new Object
+        return new ObjectByFileKey
         {
             Id = id,
             BucketId = bucketId,
@@ -26,7 +26,7 @@ public class Object
             UploadedAt = uploadedAt,
             VersionId = versionId,
             Path = new ObjectDirectory(divisionDirectory, id, versionId).Value,
-            UploadStatus = Domain.Object.UploadStatus.Instantiated.ToString(),
+            UploadStatus = Object.ObjectByFileKey.UploadStatus.Instantiated.ToString(),
         };
     }
 

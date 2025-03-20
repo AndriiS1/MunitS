@@ -1,8 +1,8 @@
-using MunitS.Domain.Division;
+using MunitS.Domain.Division.DivisionByBucketId;
 namespace MunitS.Infrastructure.Data.Repositories.Division;
 
 public interface IDivisionRepository
 {
-    Task Create(Domain.Division.Division metadata);
-    Task<Domain.Division.Division?> GetNotFull(string bucketName, DivisionType divisionType);
+    Task Create(DivisionByBucketId metadata);
+    Task<DivisionByBucketId?> GetNotFull(Guid bucketId, DivisionType divisionType);
 }

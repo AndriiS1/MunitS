@@ -24,12 +24,12 @@ message CreateBucketResponse {
 
 // Delete bucket 
 message DeleteBucketRequest {
-  string bucketName = 1;
+  string id = 1;
 }
 
 // Get bucket
 message GetBucketRequest {
-  string bucketName = 1;
+  string id = 1;
 }
 
 message GetBucketResponse {
@@ -48,7 +48,7 @@ message BucketResponse {
 
 // Get buckets
 message GetBucketsRequest {
-  repeated string bucketNames = 1;
+  repeated string ids = 1;
 }
 
 message GetBucketsResponse {
