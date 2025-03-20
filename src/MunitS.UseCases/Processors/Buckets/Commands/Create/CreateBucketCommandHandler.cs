@@ -8,9 +8,9 @@ using MunitS.Protos;
 namespace MunitS.UseCases.Processors.Buckets.Commands.Create;
 
 public class UploadFileCommandHandler(IOptions<StorageOptions> storageOptions, IBucketRepository bucketRepository) 
-    : IRequestHandler<CreateBucketCommand, BucketServiceStatusResponse>
+    : IRequestHandler<CreateBucketCommand, CreateBucketResponse>
 {
-    public async Task<BucketServiceStatusResponse> Handle(CreateBucketCommand command, CancellationToken cancellationToken)
+    public async Task<CreateBucketResponse> Handle(CreateBucketCommand command, CancellationToken cancellationToken)
     {
         var existingBucket = await bucketRepository.Get(command.Request.BucketName);
 
@@ -39,6 +39,9 @@ public class UploadFileCommandHandler(IOptions<StorageOptions> storageOptions, I
             Directory.CreateDirectory(bucketDirectory.Value);  
         }
         
-        return new BucketServiceStatusResponse { Status = "Success" };
+        return new CreateBucketResponse()
+        {
+            BucketId = bucket.Id.ToString()
+        };
     }
 }

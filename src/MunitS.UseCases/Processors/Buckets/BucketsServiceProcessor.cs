@@ -9,7 +9,7 @@ namespace MunitS.UseCases.Processors.Buckets;
 
 public class BucketsServiceProcessor(IMediator mediator) : BucketsService.BucketsServiceBase
 {
-    public override async Task<BucketServiceStatusResponse> CreateBucket(CreateBucketRequest request, ServerCallContext context)
+    public override async Task<CreateBucketResponse> CreateBucket(CreateBucketRequest request, ServerCallContext context)
     {
         return await mediator.Send(new CreateBucketCommand(request));
     }
