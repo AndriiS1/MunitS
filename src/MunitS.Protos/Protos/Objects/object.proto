@@ -8,6 +8,7 @@ service ObjectsService {
   rpc CreateObject(CreateObjectRequest) returns (ObjectServiceStatusResponse);
   rpc UploadObject(stream UploadObjectRequest) returns (ObjectServiceStatusResponse);
   rpc DeleteObject(DeleteObjectRequest) returns (ObjectServiceStatusResponse);
+  rpc GetObjectByPrefix(GetObjectByPrefixRequest) returns (GetObjectsByPrefixResponse);
 }
 
 // Upload object
@@ -40,4 +41,33 @@ message DeleteObjectRequest {
 // Status response
 message ObjectServiceStatusResponse {
   string status = 1;
+}
+
+// Get objects by prefix
+
+message GetObjectByPrefixRequest {
+  string status = 1;
+  string bucketId = 2;
+  string prefix = 3;
+}
+
+message GetObjectsByPrefixResponse {
+  string status = 1;
+  ObjectsResponse content = 2;
+}
+
+message ObjectsResponse {
+  repeated FolderByPrefixResponse Folders = 1;
+  repeated ObjectByPrefixResponse Objects = 2;
+}
+
+message ObjectByPrefixResponse {
+  string id = 1;
+  string fileName = 2;
+  string uploadedAt = 3;
+}
+
+message FolderByPrefixResponse {
+  string id = 1;
+  string prefix = 2;
 }
