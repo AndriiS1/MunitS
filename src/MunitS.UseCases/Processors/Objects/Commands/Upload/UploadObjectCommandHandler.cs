@@ -29,7 +29,7 @@ public class UploadObjectCommandHandler(IBucketByIdRepository bucketByIdReposito
 
                     if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {uploadObjectRequest.BucketId} is not found."));
 
-                    var objectVersions = await objectByFileKeyRepository.GetAll(uploadObjectRequest.FileKey, bucket.Id);
+                    var objectVersions = await objectByFileKeyRepository.GetAll(bucket.Id, uploadObjectRequest.FileKey);
 
                     if (objectVersions.Count == 0)
                     {

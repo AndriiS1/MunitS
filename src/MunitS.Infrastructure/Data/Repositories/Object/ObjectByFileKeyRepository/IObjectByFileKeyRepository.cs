@@ -3,8 +3,9 @@ namespace MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyReposito
 
 public interface IObjectByFileKeyRepository
 {
-    public Task<ObjectByFileKey?> Get(string fileKey, Guid bucketId);
-    public Task<List<ObjectByFileKey>> GetAll(string fileKey, Guid bucketId);
-    public Task Delete(string fileKey, Guid bucketId, Guid versionId);
+    public Task<ObjectByFileKey?> Get(Guid bucketId, string fileKey);
+    public Task<List<ObjectByFileKey>> GetAll(Guid bucketId, string fileKey);
+    public Task Delete(Guid bucketId, string fileKey, Guid versionId);
     public Task Create(ObjectByFileKey objectByFileKey);
+    Task UpdateUploadStatus(Guid bucketId, string fileKey, UploadStatus status);
 }

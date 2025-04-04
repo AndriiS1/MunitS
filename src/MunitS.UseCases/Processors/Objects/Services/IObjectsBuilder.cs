@@ -4,7 +4,9 @@ namespace MunitS.UseCases.Processors.Objects.Services;
 
 public interface IObjectsBuilder
 {
-    ObjectsBuilder Add(ObjectByParentPrefix objectByParentPrefix);
-    ObjectsBuilder Add(ObjectByFileKey objectByFileKey);
+    ObjectsBuilder ToInsert(ObjectByParentPrefix objectByParentPrefix);
+    ObjectsBuilder ToInsert(ObjectByFileKey objectByFileKey);
+    ObjectsBuilder ToDelete(ObjectsBuilder.DeleteObjectByParentPrefix payload);
+    ObjectsBuilder ToDelete(ObjectsBuilder.DeleteObjectByFileKey payload);
     Task Build();
 }

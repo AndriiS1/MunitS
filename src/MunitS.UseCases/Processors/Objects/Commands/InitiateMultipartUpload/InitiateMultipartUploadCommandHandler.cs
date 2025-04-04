@@ -5,12 +5,14 @@ using MunitS.Domain.Object.ObjectByFileKey;
 using MunitS.Domain.Object.ObjectByParentPrefix;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Division;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.InitiateMultipartUpload;
 
 public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilder,
+    IObjectByFileKeyRepository objectByFileKeyRepository,
     IBucketByIdRepository bucketByIdRepository,
     IDivisionRepository divisionRepository,
     IPathRetriever pathRetriever) : IRequestHandler<InitiateMultipartUploadCommand, InitiateMultipartUploadResponse>
@@ -21,12 +23,19 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
 
         if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {command.Request.BucketId} is not found."));
 
+        var objects = await objectByFileKeyRepository.GetAll(bucket.Id, command.Request.FileKey);
+
+        if (objects.Any(o => Enum.Parse<UploadStatus>(o.UploadStatus) == UploadStatus.Instantiated))
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, "Object upload is already instantiated."));
+        }
+
         var divisionType = new DivisionType(command.Request.SizeInBytes);
         var division = await divisionRepository.GetNotFull(Guid.Parse(command.Request.BucketId), divisionType);
 
         if (division == null)
         {
-            division = DivisionByBucketId.Create(new Guid(command.Request.BucketId), divisionType, pathRetriever.GetBucketDirectory(bucket));
+            division = DivisionByBucketId.Create(bucket.Id, divisionType, pathRetriever.GetBucketDirectory(bucket));
 
             Directory.CreateDirectory(division.Path);
         }
@@ -42,8 +51,8 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
         var objectByParentPrefix = ObjectByParentPrefix.Create(objectByFileKey.Id, bucket.Id, fileName, GetParentPrefix(command.Request.FileKey), initiatedAt);
 
         await objectsBuilder
-            .Add(objectByFileKey)
-            .Add(objectByParentPrefix)
+            .ToInsert(objectByFileKey)
+            .ToInsert(objectByParentPrefix)
             .Build();
 
         return new InitiateMultipartUploadResponse
