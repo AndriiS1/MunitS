@@ -5,11 +5,51 @@ option csharp_namespace = "MunitS.Protos";
 package object;
 
 service ObjectsService {
+  rpc InitiateMultipartUpload(InitiateMultipartUploadRequest) returns (InitiateMultipartUploadResponse);
+  rpc AbortMultipartUpload(AbortMultipartUploadRequest) returns (ObjectServiceStatusResponse);
+  rpc GetMultipartUploadUrls(GetMultipartUploadUrlRequest) returns (GetMultipartUploadUrlResponse);
+  rpc CompleteMultipartUpload(CompleteMultipartUploadRequest) returns (ObjectServiceStatusResponse);
+  
   rpc CreateObject(CreateObjectRequest) returns (ObjectServiceStatusResponse);
   rpc UploadObject(stream UploadObjectRequest) returns (ObjectServiceStatusResponse);
   rpc DeleteObject(DeleteObjectRequest) returns (ObjectServiceStatusResponse);
   rpc GetObjectByPrefix(GetObjectByPrefixRequest) returns (GetObjectsByPrefixResponse);
 }
+
+// Initiate multipart upload
+message InitiateMultipartUploadRequest {
+  string bucketId = 1;
+  string fileKey = 2;
+  int64 sizeInBytes = 3;
+}
+
+message InitiateMultipartUploadResponse {
+  string uploadId = 1;
+}
+
+// AbortMultipartUpload
+message AbortMultipartUploadRequest {
+  string bucketId = 1;
+  string fileKey = 2;
+}
+
+// GetMultipartUploadUrls
+message GetMultipartUploadUrlRequest {
+  string bucketId = 1;
+  string fileKey = 2;
+  int64 partNumber = 3;
+}
+
+message GetMultipartUploadUrlResponse {
+  string url = 1;
+}
+
+// CompleteMultipartUpload
+message CompleteMultipartUploadRequest {
+  string bucketId = 1;
+  string fileKey = 2;
+}
+
 
 // Upload object
 message CreateObjectRequest {

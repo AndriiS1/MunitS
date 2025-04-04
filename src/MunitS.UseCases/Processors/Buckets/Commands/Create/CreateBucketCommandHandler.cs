@@ -3,7 +3,6 @@ using MediatR;
 using Microsoft.Extensions.Options;
 using MunitS.Domain.Bucket.BucketById;
 using MunitS.Domain.Bucket.BucketByName;
-using MunitS.Infrastructure.Data.Repositories.Bucket;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByNameRepository;
 using MunitS.Infrastructure.Options.Storage;
