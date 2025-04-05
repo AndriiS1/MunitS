@@ -32,6 +32,7 @@ message InitiateMultipartUploadResponse {
 message AbortMultipartUploadRequest {
   string bucketId = 1;
   string fileKey = 2;
+  string uploadId = 3;
 }
 
 // GetMultipartUploadUrls

@@ -3,7 +3,7 @@ namespace MunitS.Domain.Object.ObjectByFileKey;
 
 public class ObjectByFileKey
 {
-    private const string TempDirectory = "temp";
+    public const string TempDirectory = "temp";
     private const string CompressionExtension = "gzip";
     public required Guid Id { get; init; }
     public required Guid BucketId { get; init; }

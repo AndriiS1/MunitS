@@ -8,11 +8,14 @@ using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services;
 using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
+using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.AbortMultipartUpload;
 
 public class AbortMultipartUploadCommandHandler(IObjectByFileKeyRepository objectByFileKeyRepository,
     IBucketByIdRepository bucketByIdRepository,
-    IObjectsBuilder objectsBuilder, IMetadataBuilder metadataBuilder) : IRequestHandler<AbortMultipartUploadCommand, ObjectServiceStatusResponse>
+    IObjectsBuilder objectsBuilder,
+    IPathRetriever pathRetriever,
+    IMetadataBuilder metadataBuilder) : IRequestHandler<AbortMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(AbortMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -29,15 +32,21 @@ public class AbortMultipartUploadCommandHandler(IObjectByFileKeyRepository objec
             throw new RpcException(new Status(StatusCode.NotFound, "There is no instantiated object."));
         }
 
-        await Task.WhenAll([
-            objectsBuilder
-                .ToDelete(new ObjectsBuilder.DeleteObjectByFileKey(bucket.Id, command.Request.FileKey, objectVersionToAbort.VersionId))
-                .ToDelete(new ObjectsBuilder.DeleteObjectByParentPrefix(bucket.Id, FileKeyRule.GetParentPrefix(command.Request.FileKey)))
-                .Build(),
-            metadataBuilder
-                .ToDelete(new MetadataBuilder.DeleteMetadataByObjectId(bucket.Id, objectVersionToAbort.Id, objectVersionToAbort.VersionId))
-                .Build()
-        ]);
+        if (objectVersionToAbort.UploadId != Guid.Parse(command.Request.UploadId))
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, "Invalid upload id."));
+        }
+
+        Directory.Delete(objects.Count == 1 ?
+            pathRetriever.GetAbsoluteObjectDirectory(objectVersionToAbort.Path) :
+            pathRetriever.GetAbsoluteObjectVersionDirectory(objectVersionToAbort.Path, objectVersionToAbort.VersionId), recursive: true);
+
+        await Task.WhenAll(objectsBuilder
+            .ToDelete(new ObjectsBuilder.DeleteObjectByFileKey(bucket.Id, command.Request.FileKey, objectVersionToAbort.VersionId))
+            .ToDelete(new ObjectsBuilder.DeleteObjectByParentPrefix(bucket.Id, FileKeyRule.GetFileName(command.Request.FileKey), FileKeyRule.GetParentPrefix(command.Request.FileKey)))
+            .Build(), metadataBuilder
+            .ToDelete(new MetadataBuilder.DeleteMetadataByObjectId(bucket.Id, objectVersionToAbort.Id, objectVersionToAbort.VersionId))
+            .Build());
 
         return new ObjectServiceStatusResponse
         {

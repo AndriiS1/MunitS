@@ -11,13 +11,18 @@ using MunitS.Infrastructure.Data.Repositories.Division;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services;
+using MunitS.UseCases.Processors.Objects.Services.DivisionBuilder;
 using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
+using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.InitiateMultipartUpload;
 
 public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilder,
     IObjectByFileKeyRepository objectByFileKeyRepository,
     IBucketByIdRepository bucketByIdRepository,
-    IDivisionRepository divisionRepository, IMetadataBuilder metadataBuilder) : IRequestHandler<InitiateMultipartUploadCommand, InitiateMultipartUploadResponse>
+    IPathRetriever pathRetriever,
+    IDivisionRepository divisionRepository,
+    IDivisionBuilder divisionBuilder,
+    IMetadataBuilder metadataBuilder) : IRequestHandler<InitiateMultipartUploadCommand, InitiateMultipartUploadResponse>
 {
     public async Task<InitiateMultipartUploadResponse> Handle(InitiateMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -33,38 +38,47 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
         }
 
         var divisionType = new DivisionType(command.Request.SizeInBytes);
+
         var division = await divisionRepository.GetNotFull(Guid.Parse(command.Request.BucketId), divisionType);
 
         if (division == null)
         {
             division = DivisionByBucketId.Create(bucket.Id, bucket.Name, divisionType);
+            var divisionDirectory = new DivisionDirectory(bucket.Name, division.Id, division.GetSizeType());
 
-            Directory.CreateDirectory(division.Path);
+            var absoluteDivisionDirectory = pathRetriever.GetAbsoluteDivisionDirectory(divisionDirectory);
+            Directory.CreateDirectory(absoluteDivisionDirectory);
+
+            await divisionBuilder
+                .ToInsert(division)
+                .Build();
         }
+
+        var existingDivisionDirectory = new DivisionDirectory(bucket.Name, division.Id, division.GetSizeType());
 
         var fileName = FileKeyRule.GetFileName(command.Request.FileKey);
         var initiatedAt = DateTimeOffset.UtcNow;
 
-        var divisionDirectory = new DivisionDirectory(bucket.Name, division.Id, division.GetSizeType());
-
         var objectByFileKey = ObjectByFileKey.Create(bucket.Id, command.Request.FileKey,
-            fileName, initiatedAt, divisionDirectory, FileKeyRule.GetExtension(command.Request.FileKey));
+            fileName, initiatedAt, existingDivisionDirectory, FileKeyRule.GetExtension(command.Request.FileKey));
 
         var objectByParentPrefix = ObjectByParentPrefix.Create(objectByFileKey.Id, bucket.Id, fileName, FileKeyRule.GetParentPrefix(command.Request.FileKey), initiatedAt);
 
         var metadataByObjectId = MetadataByObjectId.Create(bucket.Id, objectByFileKey.VersionId, objectByFileKey.Id, command.Request.ContentType, command.Request.SizeInBytes);
-        
-        Directory.CreateDirectory(objectByFileKey.GetObjectTempPath());
 
-        await Task.WhenAll([
-            objectsBuilder
-                .ToInsert(objectByFileKey)
-                .ToInsert(objectByParentPrefix)
-                .Build(),
-            metadataBuilder
-                .ToInsert(metadataByObjectId)
-                .Build()
-        ]);
+        var objectDirectory = new ObjectDirectory(existingDivisionDirectory, objectByFileKey.Id);
+        var objectVersionDirectory = new ObjectVersionDirectory(objectDirectory, objectByFileKey.VersionId);
+        var tempObjectVersionDirectory = new TempObjectVersionDirectory(objectVersionDirectory);
+
+        var absoluteObjectVersionedTempDirectory = pathRetriever.GetAbsoluteObjectTempVersionDirectory(tempObjectVersionDirectory);
+        Directory.CreateDirectory(absoluteObjectVersionedTempDirectory);
+
+        await Task.WhenAll(objectsBuilder
+            .ToInsert(objectByFileKey)
+            .ToInsert(objectByParentPrefix)
+            .Build(), metadataBuilder
+            .ToInsert(metadataByObjectId)
+            .Build());
 
         return new InitiateMultipartUploadResponse
         {

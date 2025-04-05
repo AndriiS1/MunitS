@@ -1,17 +1,16 @@
 using Grpc.Core;
 using MediatR;
-using Microsoft.Extensions.Options;
 using MunitS.Domain.Bucket.BucketById;
 using MunitS.Domain.Bucket.BucketByName;
 using MunitS.Domain.Directory;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByNameRepository;
-using MunitS.Infrastructure.Options.Storage;
 using MunitS.Protos;
+using MunitS.UseCases.Processors.Service.PathRetriever;
 using Directory = System.IO.Directory;
 namespace MunitS.UseCases.Processors.Buckets.Commands.Create;
 
-public class UploadFileCommandHandler(IOptions<StorageOptions> storageOptions,
+public class CreateBucketCommandHandler(IPathRetriever pathRetriever,
     IBucketByIdRepository bucketByIdRepository,
     IBucketByNameRepository bucketByNameRepository)
     : IRequestHandler<CreateBucketCommand, CreateBucketResponse>
@@ -39,11 +38,11 @@ public class UploadFileCommandHandler(IOptions<StorageOptions> storageOptions,
         await bucketByIdRepository.Create(bucket);
         await bucketByNameRepository.Create(BucketByName.Create(bucket.Id, command.Request.BucketName));
 
-        var bucketDirectory = new BucketDirectory(storageOptions.Value.RootDirectory, bucket);
+        var absoluteBucketDirectory = pathRetriever.GetAbsoluteBucketDirectory(new BucketDirectory(bucket.Name));
 
-        if (!Directory.Exists(bucketDirectory.Value))
+        if (!Directory.Exists(absoluteBucketDirectory))
         {
-            Directory.CreateDirectory(bucketDirectory.Value);
+            Directory.CreateDirectory(absoluteBucketDirectory);
         }
 
         return new CreateBucketResponse

@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using MunitS.UseCases.Processors.Buckets;
 using MunitS.UseCases.Processors.Objects;
 using MunitS.UseCases.Processors.Objects.Services;
+using MunitS.UseCases.Processors.Objects.Services.DivisionBuilder;
+using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Service.Compression;
 using MunitS.UseCases.Processors.Service.PathRetriever;
@@ -15,13 +17,15 @@ public static class UseCasesExtensions
         app.MapGrpcService<ObjectsServiceProcessor>();
         app.MapGrpcService<BucketsServiceProcessor>();
     }
-    
+
     public static void ConfigureUseCases(this WebApplicationBuilder builder)
     {
         builder.Services.AddMediatr();
         builder.Services.AddSingleton<IPathRetriever, PathRetriever>();
         builder.Services.AddScoped<ICompressionService, CompressionService>();
+        builder.Services.AddScoped<IMetadataBuilder, MetadataBuilder>();
         builder.Services.AddScoped<IObjectsBuilder, ObjectsBuilder>();
+        builder.Services.AddScoped<IDivisionBuilder, DivisionBuilder>();
     }
 
     private static void AddMediatr(this IServiceCollection services)

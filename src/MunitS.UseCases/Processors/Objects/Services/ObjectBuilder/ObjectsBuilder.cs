@@ -41,12 +41,12 @@ public class ObjectsBuilder(IObjectByFileKeyRepository objectByFileKeyRepository
             .Concat(_objectByParentPrefixesToInsert.Select(objectByParentPrefixRepository.Create));
 
         var deleteTasks = _objectByFileKeysToDelete.Select(o => objectByFileKeyRepository.Delete(o.BucketId, o.FileKey, o.VersionId))
-            .Concat(_objectByParentPrefixesToDelete.Select(o => objectByParentPrefixRepository.Delete(o.BucketId, o.ParentPrefix)));
+            .Concat(_objectByParentPrefixesToDelete.Select(o => objectByParentPrefixRepository.Delete(o.BucketId, o.FileName, o.ParentPrefix)));
 
         await Task.WhenAll(insertTasks.Concat(deleteTasks));
     }
 
     public sealed record DeleteObjectByFileKey(Guid BucketId, string FileKey, Guid VersionId);
 
-    public sealed record DeleteObjectByParentPrefix(Guid BucketId, string ParentPrefix);
+    public sealed record DeleteObjectByParentPrefix(Guid BucketId, string FileName, string ParentPrefix);
 }
