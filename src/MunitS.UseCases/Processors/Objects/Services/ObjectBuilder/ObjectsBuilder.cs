@@ -2,7 +2,7 @@ using MunitS.Domain.Object.ObjectByFileKey;
 using MunitS.Domain.Object.ObjectByParentPrefix;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByParentPrefixRepository;
-namespace MunitS.UseCases.Processors.Objects.Services;
+namespace MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 
 public class ObjectsBuilder(IObjectByFileKeyRepository objectByFileKeyRepository, IObjectByParentPrefixRepository objectByParentPrefixRepository) : IObjectsBuilder
 {

@@ -1,15 +1,18 @@
 using Grpc.Core;
 using MediatR;
 using MunitS.Domain.Object.ObjectByFileKey;
+using MunitS.Domain.Rules;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services;
+using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
+using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 namespace MunitS.UseCases.Processors.Objects.Commands.AbortMultipartUpload;
 
 public class AbortMultipartUploadCommandHandler(IObjectByFileKeyRepository objectByFileKeyRepository,
     IBucketByIdRepository bucketByIdRepository,
-    IObjectsBuilder objectsBuilder) : IRequestHandler<AbortMultipartUploadCommand, ObjectServiceStatusResponse>
+    IObjectsBuilder objectsBuilder, IMetadataBuilder metadataBuilder) : IRequestHandler<AbortMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(AbortMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -26,20 +29,19 @@ public class AbortMultipartUploadCommandHandler(IObjectByFileKeyRepository objec
             throw new RpcException(new Status(StatusCode.NotFound, "There is no instantiated object."));
         }
 
-        await objectsBuilder
-            .ToDelete(new ObjectsBuilder.DeleteObjectByFileKey(bucket.Id, command.Request.FileKey, objectVersionToAbort.VersionId))
-            .ToDelete(new ObjectsBuilder.DeleteObjectByParentPrefix(bucket.Id, GetParentPrefix(command.Request.FileKey)))
-            .Build();
+        await Task.WhenAll([
+            objectsBuilder
+                .ToDelete(new ObjectsBuilder.DeleteObjectByFileKey(bucket.Id, command.Request.FileKey, objectVersionToAbort.VersionId))
+                .ToDelete(new ObjectsBuilder.DeleteObjectByParentPrefix(bucket.Id, FileKeyRule.GetParentPrefix(command.Request.FileKey)))
+                .Build(),
+            metadataBuilder
+                .ToDelete(new MetadataBuilder.DeleteMetadataByObjectId(bucket.Id, objectVersionToAbort.Id, objectVersionToAbort.VersionId))
+                .Build()
+        ]);
 
         return new ObjectServiceStatusResponse
         {
             Status = "Success"
         };
-    }
-
-    private static string GetParentPrefix(string fileKey)
-    {
-        var parts = fileKey.Split('/');
-        return string.Join("/", parts[new Range(0, parts.Length - 1)]);
     }
 }

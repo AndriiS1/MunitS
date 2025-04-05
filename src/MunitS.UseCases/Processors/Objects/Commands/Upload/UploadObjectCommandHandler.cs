@@ -44,7 +44,7 @@ public class UploadObjectCommandHandler(IBucketByIdRepository bucketByIdReposito
                     fileName = uploadObjectRequest.FileKey;
                     totalChunks = uploadObjectRequest.TotalChunks;
 
-                    fileStream = new FileStream(objectVersions.Last().GetObjectDataPath(), FileMode.Create, FileAccess.Write);
+                    fileStream = new FileStream(objectVersions.Last().GetObjectPath(), FileMode.Create, FileAccess.Write);
                 }
 
                 if (uploadObjectRequest.FileKey != fileName || uploadObjectRequest.TotalChunks != totalChunks)

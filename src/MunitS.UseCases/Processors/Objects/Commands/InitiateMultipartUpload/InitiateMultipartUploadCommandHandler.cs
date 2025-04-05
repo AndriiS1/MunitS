@@ -1,21 +1,23 @@
 using Grpc.Core;
 using MediatR;
+using MunitS.Domain.Directory;
 using MunitS.Domain.Division.DivisionByBucketId;
+using MunitS.Domain.Metadata.MedataByObjectId;
 using MunitS.Domain.Object.ObjectByFileKey;
 using MunitS.Domain.Object.ObjectByParentPrefix;
+using MunitS.Domain.Rules;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Division;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services;
-using MunitS.UseCases.Processors.Service.PathRetriever;
+using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
 namespace MunitS.UseCases.Processors.Objects.Commands.InitiateMultipartUpload;
 
 public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilder,
     IObjectByFileKeyRepository objectByFileKeyRepository,
     IBucketByIdRepository bucketByIdRepository,
-    IDivisionRepository divisionRepository,
-    IPathRetriever pathRetriever) : IRequestHandler<InitiateMultipartUploadCommand, InitiateMultipartUploadResponse>
+    IDivisionRepository divisionRepository, IMetadataBuilder metadataBuilder) : IRequestHandler<InitiateMultipartUploadCommand, InitiateMultipartUploadResponse>
 {
     public async Task<InitiateMultipartUploadResponse> Handle(InitiateMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -35,47 +37,38 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
 
         if (division == null)
         {
-            division = DivisionByBucketId.Create(bucket.Id, divisionType, pathRetriever.GetBucketDirectory(bucket));
+            division = DivisionByBucketId.Create(bucket.Id, bucket.Name, divisionType);
 
             Directory.CreateDirectory(division.Path);
         }
 
-        var fileName = GetFileName(command.Request.FileKey);
+        var fileName = FileKeyRule.GetFileName(command.Request.FileKey);
         var initiatedAt = DateTimeOffset.UtcNow;
 
-        var divisionDirectory = new DivisionDirectory(pathRetriever.GetBucketDirectory(bucket), division.Name, division.GetSizeType());
+        var divisionDirectory = new DivisionDirectory(bucket.Name, division.Id, division.GetSizeType());
 
         var objectByFileKey = ObjectByFileKey.Create(bucket.Id, command.Request.FileKey,
-            fileName, initiatedAt, divisionDirectory, GetExtension(command.Request.FileKey));
+            fileName, initiatedAt, divisionDirectory, FileKeyRule.GetExtension(command.Request.FileKey));
 
-        var objectByParentPrefix = ObjectByParentPrefix.Create(objectByFileKey.Id, bucket.Id, fileName, GetParentPrefix(command.Request.FileKey), initiatedAt);
+        var objectByParentPrefix = ObjectByParentPrefix.Create(objectByFileKey.Id, bucket.Id, fileName, FileKeyRule.GetParentPrefix(command.Request.FileKey), initiatedAt);
 
-        await objectsBuilder
-            .ToInsert(objectByFileKey)
-            .ToInsert(objectByParentPrefix)
-            .Build();
+        var metadataByObjectId = MetadataByObjectId.Create(bucket.Id, objectByFileKey.VersionId, objectByFileKey.Id, command.Request.ContentType, command.Request.SizeInBytes);
+        
+        Directory.CreateDirectory(objectByFileKey.GetObjectTempPath());
+
+        await Task.WhenAll([
+            objectsBuilder
+                .ToInsert(objectByFileKey)
+                .ToInsert(objectByParentPrefix)
+                .Build(),
+            metadataBuilder
+                .ToInsert(metadataByObjectId)
+                .Build()
+        ]);
 
         return new InitiateMultipartUploadResponse
         {
             UploadId = objectByFileKey.UploadId.ToString()
         };
-    }
-
-    private static string GetFileName(string fileKey)
-    {
-        var parts = fileKey.Split('/');
-        return parts[^1];
-    }
-
-    private static string GetParentPrefix(string fileKey)
-    {
-        var parts = fileKey.Split('/');
-        return string.Join("/", parts[new Range(0, parts.Length - 1)]);
-    }
-
-    private static string GetExtension(string fileKey)
-    {
-        var parts = fileKey.Split('.');
-        return parts[^1];
     }
 }

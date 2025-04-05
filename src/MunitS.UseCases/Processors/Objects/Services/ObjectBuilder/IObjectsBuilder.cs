@@ -1,5 +1,6 @@
 using MunitS.Domain.Object.ObjectByFileKey;
 using MunitS.Domain.Object.ObjectByParentPrefix;
+using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 namespace MunitS.UseCases.Processors.Objects.Services;
 
 public interface IObjectsBuilder

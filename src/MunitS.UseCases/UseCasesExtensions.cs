@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MunitS.UseCases.Processors.Buckets;
 using MunitS.UseCases.Processors.Objects;
 using MunitS.UseCases.Processors.Objects.Services;
+using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Service.Compression;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases;

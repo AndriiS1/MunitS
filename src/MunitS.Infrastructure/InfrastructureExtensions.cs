@@ -62,7 +62,7 @@ public static class InfrastructureExtensions
     {
         builder.Services.AddSingleton<IBucketByIdRepository, BucketByIdByIdRepository>();
         builder.Services.AddSingleton<IBucketByNameRepository, BucketByIdByNameRepository>();
-        builder.Services.AddSingleton<IMetadataRepository, MetadataRepository>();
+        builder.Services.AddSingleton<IMetadataByObjectIdRepository, MetadataByObjectIdRepository>();
         builder.Services.AddSingleton<IObjectByFileKeyRepository, ObjectByFileKeyRepository>();
         builder.Services.AddSingleton<IObjectByParentPrefixRepository, ObjectByParentPrefixRepository>();
         builder.Services.AddSingleton<IDivisionRepository, DivisionRepository>();
