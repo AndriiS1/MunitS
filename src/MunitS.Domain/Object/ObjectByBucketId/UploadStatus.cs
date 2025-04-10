@@ -1,4 +1,4 @@
-namespace MunitS.Domain.Object.ObjectByFileKey;
+namespace MunitS.Domain.Object.ObjectByBucketId;
 
 public enum UploadStatus
 {

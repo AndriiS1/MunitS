@@ -10,8 +10,6 @@ service ObjectsService {
   rpc GetMultipartUploadUrls(GetMultipartUploadUrlRequest) returns (GetMultipartUploadUrlResponse);
   rpc CompleteMultipartUpload(CompleteMultipartUploadRequest) returns (ObjectServiceStatusResponse);
   
-  rpc CreateObject(CreateObjectRequest) returns (ObjectServiceStatusResponse);
-  rpc UploadObject(stream UploadObjectRequest) returns (ObjectServiceStatusResponse);
   rpc DeleteObject(DeleteObjectRequest) returns (ObjectServiceStatusResponse);
   rpc GetObjectByPrefix(GetObjectByPrefixRequest) returns (GetObjectsByPrefixResponse);
 }
@@ -31,8 +29,7 @@ message InitiateMultipartUploadResponse {
 // AbortMultipartUpload
 message AbortMultipartUploadRequest {
   string bucketId = 1;
-  string fileKey = 2;
-  string uploadId = 3;
+  string uploadId = 2;
 }
 
 // GetMultipartUploadUrls
@@ -49,29 +46,8 @@ message GetMultipartUploadUrlResponse {
 // CompleteMultipartUpload
 message CompleteMultipartUploadRequest {
   string bucketId = 1;
-  string fileKey = 2;
-}
-
-
-// Upload object
-message CreateObjectRequest {
-  string bucketId = 1;
-  string fileKey = 2;
-  string contentType = 3;
-  int64 sizeInBytes = 4;
-}
-
-// Upload object
-message UploadObjectRequest {
-  string bucketId = 1;
-  string fileKey = 2;
-  int64 totalChunks = 3;
-  Chunk chunk = 4;
-}
-
-message Chunk {
-  bytes dataStream = 1;
-  int64 chunkIndex = 3;
+  string uploadId = 2;
+  map<int32, string> eTags = 3;
 }
 
 // Delete object

@@ -1,17 +1,18 @@
 using Cassandra.Mapping;
-namespace MunitS.Domain.Object.ObjectByFileKey;
+namespace MunitS.Domain.Object.ObjectByBucketId;
 
-public class ObjectsByFileKeyMapping : Mappings
+public class ObjectsByBucketIdMapping : Mappings
 {
-    private const string TableName = "objects_by_file_key";
+    private const string TableName = "objects_by_bucket_id";
 
-    public ObjectsByFileKeyMapping()
+    public ObjectsByBucketIdMapping()
     {
-        For<ObjectByFileKey>()
+        For<ObjectByBucketId>()
             .TableName(TableName)
-            .PartitionKey(c => c.BucketId, c => c.FileKey)
+            .PartitionKey(c => c.BucketId)
             .Column(c => c.Id, cm => cm.WithName("id"))
             .Column(c => c.BucketId, cm => cm.WithName("bucket_id"))
+            .Column(c => c.DivisionId, cm => cm.WithName("division_id"))
             .Column(c => c.VersionId, cm => cm.WithName("version_id"))
             .Column(c => c.UploadId, cm => cm.WithName("upload_id"))
             .Column(c => c.InitiatedAt, cm => cm.WithName("initiated_at"))
@@ -20,6 +21,6 @@ public class ObjectsByFileKeyMapping : Mappings
             .Column(c => c.UploadedAt, cm => cm.WithName("uploaded_at"))
             .Column(c => c.Extension, cm => cm.WithName("extension"))
             .Column(c => c.UploadStatus, cm => cm.WithName("upload_status"))
-            .Column(c => c.Path, cm => cm.WithName("path"));
+            .Column(c => c.DivisionSizeType, cm => cm.WithName("division_size_type"));
     }
 }

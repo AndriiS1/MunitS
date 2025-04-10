@@ -38,7 +38,7 @@ public class CreateBucketCommandHandler(IPathRetriever pathRetriever,
         await bucketByIdRepository.Create(bucket);
         await bucketByNameRepository.Create(BucketByName.Create(bucket.Id, command.Request.BucketName));
 
-        var absoluteBucketDirectory = pathRetriever.GetAbsoluteBucketDirectory(new BucketDirectory(bucket.Name));
+        var absoluteBucketDirectory = pathRetriever.GetAbsoluteDirectoryPath(new BucketDirectory(bucket.Name));
 
         if (!Directory.Exists(absoluteBucketDirectory))
         {

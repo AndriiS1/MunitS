@@ -1,75 +1,47 @@
+using System.Security.Cryptography;
 using Grpc.Core;
 using MediatR;
-using MunitS.Domain.Object.ObjectByFileKey;
+using Microsoft.AspNetCore.Http;
+using MunitS.Domain.Directory;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
-using MunitS.Protos;
-using MunitS.UseCases.Processors.Service.Compression;
-using static System.Enum;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
+using MunitS.UseCases.Processors.Service.PathRetriever;
+using MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
 namespace MunitS.UseCases.Processors.Objects.Commands.Upload;
 
 public class UploadObjectCommandHandler(IBucketByIdRepository bucketByIdRepository,
-    IObjectByFileKeyRepository objectByFileKeyRepository,
-    ICompressionService compressionService) : IRequestHandler<UploadObjectCommand, ObjectServiceStatusResponse>
+    IObjectByBucketIdRepository objectByBucketIdRepository,
+    IPathRetriever pathRetriever) : IRequestHandler<UploadObjectCommand, IResult>
 {
-    public async Task<ObjectServiceStatusResponse> Handle(UploadObjectCommand command, CancellationToken cancellationToken)
+    public async Task<IResult> Handle(UploadObjectCommand command, CancellationToken cancellationToken)
     {
-        long totalChunks = 0;
-        var currentChunkIndex = 0;
-        var fileName = string.Empty;
-        FileStream? fileStream = null;
+        var bucket = await bucketByIdRepository.Get(command.BucketId);
 
-        try
+        if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {command.BucketId} is not found."));
+
+        var @object = await objectByBucketIdRepository.GetByUploadId(command.BucketId, command.UploadId);
+
+        if (@object == null) return Results.NotFound("Object is not found.");
+
+        var objectDirectories = new ObjectDirectories(bucket.Name, @object);
+        var partPath = new PartPath(objectDirectories.TempObjectVersionDirectory, command.PartNumber);
+        var absolutePartPath = pathRetriever.GetAbsoluteDirectoryPath(partPath);
+
+        await using var stream = File.Create(absolutePartPath);
+
+        await command.PartData.CopyToAsync(stream, cancellationToken);
+
+        stream.Position = 0;
+
+        await using var md5Stream = File.OpenRead(absolutePartPath);
+
+        using var md5 = MD5.Create();
+        var hash = await md5.ComputeHashAsync(md5Stream, cancellationToken);
+        var etag = Convert.ToHexString(hash).ToLowerInvariant();
+
+        return Results.Ok(new
         {
-            await foreach (var uploadObjectRequest in command.RequestStream.ReadAllAsync(cancellationToken))
-            {
-                if (currentChunkIndex == 0)
-                {
-                    var bucket = await bucketByIdRepository.Get(new Guid(uploadObjectRequest.BucketId));
-
-                    if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {uploadObjectRequest.BucketId} is not found."));
-
-                    var objectVersions = await objectByFileKeyRepository.GetAll(bucket.Id, uploadObjectRequest.FileKey);
-
-                    if (objectVersions.Count == 0)
-                    {
-                        throw new RpcException(new Status(StatusCode.NotFound, "Object is not created."));
-                    }
-
-                    if (Parse<UploadStatus>(objectVersions.Last().UploadStatus) != UploadStatus.Instantiated)
-                    {
-                        throw new RpcException(new Status(StatusCode.NotFound, "Object is not created."));
-                    }
-
-                    fileName = uploadObjectRequest.FileKey;
-                    totalChunks = uploadObjectRequest.TotalChunks;
-
-                    fileStream = new FileStream(objectVersions.Last().GetObjectPath(), FileMode.Create, FileAccess.Write);
-                }
-
-                if (uploadObjectRequest.FileKey != fileName || uploadObjectRequest.TotalChunks != totalChunks)
-                {
-                    File.Delete(fileStream!.Name);
-
-                    throw new RpcException(new Status(StatusCode.Cancelled, "Chuck id data was changed mid upload."));
-                }
-
-                var compressedChunk = compressionService.CompressChunk(uploadObjectRequest.Chunk.DataStream.ToArray());
-
-                await fileStream!.WriteAsync(compressedChunk.AsMemory(0, compressedChunk.Length), cancellationToken);
-                currentChunkIndex++;
-            }
-
-            fileStream!.Seek(0, SeekOrigin.Begin);
-        }
-        finally
-        {
-            if (fileStream != null) await fileStream.DisposeAsync();
-        }
-
-        return new ObjectServiceStatusResponse
-        {
-            Status = "Success"
-        };
+            ETag = etag
+        });
     }
 }

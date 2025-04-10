@@ -1,19 +1,19 @@
-using MunitS.Domain.Object.ObjectByFileKey;
+using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Object.ObjectByParentPrefix;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByParentPrefixRepository;
 namespace MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 
-public class ObjectsBuilder(IObjectByFileKeyRepository objectByFileKeyRepository, IObjectByParentPrefixRepository objectByParentPrefixRepository) : IObjectsBuilder
+public class ObjectsBuilder(IObjectByBucketIdRepository objectByBucketIdRepository, IObjectByParentPrefixRepository objectByParentPrefixRepository) : IObjectsBuilder
 {
-    private readonly List<DeleteObjectByFileKey> _objectByFileKeysToDelete = [];
-    private readonly List<ObjectByFileKey> _objectByFileKeysToInsert = [];
+    private readonly List<DeleteObjectByBucketId> _objectByBucketIdsToDelete = [];
+    private readonly List<ObjectByBucketId> _objectByBucketIdsToInsert = [];
     private readonly List<DeleteObjectByParentPrefix> _objectByParentPrefixesToDelete = [];
     private readonly List<ObjectByParentPrefix> _objectByParentPrefixesToInsert = [];
 
-    public ObjectsBuilder ToDelete(DeleteObjectByFileKey payload)
+    public ObjectsBuilder ToDelete(DeleteObjectByBucketId payload)
     {
-        _objectByFileKeysToDelete.Add(payload);
+        _objectByBucketIdsToDelete.Add(payload);
         return this;
     }
 
@@ -23,9 +23,9 @@ public class ObjectsBuilder(IObjectByFileKeyRepository objectByFileKeyRepository
         return this;
     }
 
-    public ObjectsBuilder ToInsert(ObjectByFileKey objectByFileKey)
+    public ObjectsBuilder ToInsert(ObjectByBucketId objectByBucketId)
     {
-        _objectByFileKeysToInsert.Add(objectByFileKey);
+        _objectByBucketIdsToInsert.Add(objectByBucketId);
         return this;
     }
 
@@ -37,16 +37,16 @@ public class ObjectsBuilder(IObjectByFileKeyRepository objectByFileKeyRepository
 
     public async Task Build()
     {
-        var insertTasks = _objectByFileKeysToInsert.Select(objectByFileKeyRepository.Create).ToList()
+        var insertTasks = _objectByBucketIdsToInsert.Select(objectByBucketIdRepository.Create).ToList()
             .Concat(_objectByParentPrefixesToInsert.Select(objectByParentPrefixRepository.Create));
 
-        var deleteTasks = _objectByFileKeysToDelete.Select(o => objectByFileKeyRepository.Delete(o.BucketId, o.FileKey, o.VersionId))
+        var deleteTasks = _objectByBucketIdsToDelete.Select(o => objectByBucketIdRepository.Delete(o.BucketId, o.UploadId))
             .Concat(_objectByParentPrefixesToDelete.Select(o => objectByParentPrefixRepository.Delete(o.BucketId, o.FileName, o.ParentPrefix)));
 
         await Task.WhenAll(insertTasks.Concat(deleteTasks));
     }
 
-    public sealed record DeleteObjectByFileKey(Guid BucketId, string FileKey, Guid VersionId);
+    public sealed record DeleteObjectByBucketId(Guid BucketId, Guid UploadId);
 
     public sealed record DeleteObjectByParentPrefix(Guid BucketId, string FileName, string ParentPrefix);
 }
