@@ -5,6 +5,11 @@ public class PartByUploadIdRepository(CassandraConnector connector) : IPartByUpl
 {
     private readonly Table<Domain.Part.PartByUploadId.PartByUploadId> _objects = new(connector.GetSession());
 
+    public async Task<Domain.Part.PartByUploadId.PartByUploadId?> Get(Guid bucketId, Guid uploadId, int number)
+    {
+        return await _objects.FirstOrDefault(o => o.BucketId == bucketId && o.UploadId == uploadId && o.Number == number).ExecuteAsync();
+    }
+
     public async Task<List<Domain.Part.PartByUploadId.PartByUploadId>> GetAll(Guid bucketId, Guid uploadId)
     {
         return (await _objects.Where(o => o.BucketId == bucketId && o.UploadId == uploadId).ExecuteAsync()).ToList();

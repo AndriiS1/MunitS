@@ -1,27 +1,33 @@
 using System.Security.Cryptography;
-using Grpc.Core;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using MunitS.Domain.Directory;
+using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
+using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 using MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
-namespace MunitS.UseCases.Processors.Objects.Commands.Upload;
+namespace MunitS.UseCases.Processors.Objects.Commands.UploadPart;
 
-public class UploadObjectCommandHandler(IBucketByIdRepository bucketByIdRepository,
+public class UploadPartCommandHandler(IBucketByIdRepository bucketByIdRepository,
     IObjectByBucketIdRepository objectByBucketIdRepository,
-    IPathRetriever pathRetriever) : IRequestHandler<UploadObjectCommand, IResult>
+    IPartByUploadIdRepository partByUploadIdRepository,
+    IPathRetriever pathRetriever) : IRequestHandler<UploadPartCommand, IResult>
 {
-    public async Task<IResult> Handle(UploadObjectCommand command, CancellationToken cancellationToken)
+    public async Task<IResult> Handle(UploadPartCommand command, CancellationToken cancellationToken)
     {
         var bucket = await bucketByIdRepository.Get(command.BucketId);
 
-        if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {command.BucketId} is not found."));
+        if (bucket == null) return Results.NotFound($"Bucket with name: {command.BucketId} is not found.");
 
         var @object = await objectByBucketIdRepository.GetByUploadId(command.BucketId, command.UploadId);
 
         if (@object == null) return Results.NotFound("Object is not found.");
+
+        var tryGetPart = await partByUploadIdRepository.Get(bucket.Id, command.UploadId, command.PartNumber);
+
+        if (tryGetPart is not null) return Results.Conflict("Part with this number is already uploaded.");
 
         var objectDirectories = new ObjectDirectories(bucket.Name, @object);
         var partPath = new PartPath(objectDirectories.TempObjectVersionDirectory, command.PartNumber);
@@ -38,6 +44,9 @@ public class UploadObjectCommandHandler(IBucketByIdRepository bucketByIdReposito
         using var md5 = MD5.Create();
         var hash = await md5.ComputeHashAsync(md5Stream, cancellationToken);
         var etag = Convert.ToHexString(hash).ToLowerInvariant();
+
+        var partByUploadId = PartByUploadId.Create(bucket.Id, command.UploadId, etag, command.PartNumber);
+        await partByUploadIdRepository.Create(partByUploadId);
 
         return Results.Ok(new
         {

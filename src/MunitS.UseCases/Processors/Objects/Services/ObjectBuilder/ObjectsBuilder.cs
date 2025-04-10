@@ -4,7 +4,8 @@ using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByParentPrefixRepository;
 namespace MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 
-public class ObjectsBuilder(IObjectByBucketIdRepository objectByBucketIdRepository, IObjectByParentPrefixRepository objectByParentPrefixRepository) : IObjectsBuilder
+public class ObjectsBuilder(IObjectByBucketIdRepository objectByBucketIdRepository,
+    IObjectByParentPrefixRepository objectByParentPrefixRepository) : IObjectsBuilder
 {
     private readonly List<DeleteObjectByBucketId> _objectByBucketIdsToDelete = [];
     private readonly List<ObjectByBucketId> _objectByBucketIdsToInsert = [];

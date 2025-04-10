@@ -1,6 +1,11 @@
+using System.Security.Cryptography;
+using System.Text;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using MunitS.UseCases.Processors.Objects.Commands.Upload;
+using Microsoft.Extensions.Options;
+using MunitS.Domain.Rules;
+using MunitS.Infrastructure.Options.Storage;
+using MunitS.UseCases.Processors.Objects.Commands.UploadPart;
 namespace MunitS.Apis.Objects;
 
 public static class ObjectsEndpoints
@@ -9,12 +14,38 @@ public static class ObjectsEndpoints
 
     public static void MapObjectsEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPut("objects/upload/{uploadId}/parts", async ([FromRoute] string uploadId, [FromQuery] string bucketId,
-                [FromQuery] int partNumber, [FromBody] IFormFile file,
-                [FromServices] IMediator mediator) => await mediator.Send(new UploadObjectCommand(Guid.Parse(bucketId),
-                Guid.Parse(uploadId), file, partNumber)))
+        app.MapPut("objects/upload/{uploadId}/parts", UploadObject)
             .WithGroupName(Source)
             .DisableAntiforgery()
             .RequireAuthorization();
+    }
+
+    private static async Task<IResult> UploadObject([FromRoute] string uploadId, [FromQuery] string bucketId,
+        [FromQuery] int partNumber, [FromQuery] long expiresAt, [FromQuery] string signature, [FromBody] IFormFile file,
+        [FromServices] IMediator mediator, [FromServices] IOptions<StorageOptions> options)
+    {
+        if (!ValidateSignedUrl(uploadId, bucketId, partNumber, expiresAt, signature, options.Value.SignatureSecret))
+        {
+            return Results.Forbid();
+        }
+
+        await mediator.Send(new UploadPartCommand(Guid.Parse(bucketId),
+            Guid.Parse(uploadId), file, partNumber));
+
+        return Results.Ok();
+    }
+
+    private static bool ValidateSignedUrl(string uploadId, string bucketId, int partNumber, long expiresAt, string signature, string signatureSecret)
+    {
+        var nowUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        if (nowUnix > expiresAt) return false;
+
+        var dataToSign = SignatureRule.GetSignature(bucketId, uploadId, partNumber, expiresAt);
+
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(signatureSecret));
+        var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(dataToSign));
+        var expectedSignature = Convert.ToHexString(hashBytes).ToLowerInvariant();
+
+        return signature == expectedSignature;
     }
 }
