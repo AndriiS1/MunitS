@@ -73,7 +73,6 @@ CREATE TABLE objects_by_parent_prefix (
 DROP TABLE IF EXISTS folder_prefixes_by_parent_prefix;
 CREATE TABLE folder_prefixes_by_parent_prefix (
     bucket_id UUID,	
-    id UUID,
     parent_prefix TEXT,
     prefix TEXT,
     PRIMARY KEY ((bucket_id, parent_prefix), prefix)

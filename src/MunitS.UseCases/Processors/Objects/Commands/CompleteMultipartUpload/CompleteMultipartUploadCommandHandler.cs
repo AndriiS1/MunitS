@@ -1,20 +1,25 @@
 using Grpc.Core;
 using MediatR;
 using MunitS.Domain.Directory;
+using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
+using MunitS.Infrastructure.Data.Repositories.Division;
+using MunitS.Infrastructure.Data.Repositories.FolderPrefix.FolderPrefixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
+using MunitS.UseCases.Processors.Service.ForlderPrefixesRetriever;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 using MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
 namespace MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
 
 public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository objectByBucketIdRepository,
     IBucketByIdRepository bucketByIdRepository, IPathRetriever pathRetriever, IMetadataByObjectIdRepository metadataByObjectIdRepository,
-    IPartByUploadIdRepository partByUploadIdRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
+    IPartByUploadIdRepository partByUploadIdRepository, IDivisionRepository divisionRepository,
+    IFolderPrefixByParentPrefixRepository folderPrefixByParentPrefixRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CompleteMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -63,13 +68,21 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             await using var partStream = File.OpenRead(absolutePartPath);
             await partStream.CopyToAsync(finalFile, cancellationToken);
         }
-
-        await Task.WhenAll([
+        
+        List<Task> tasks =
+        [
             objectByBucketIdRepository.UpdateUploadStatus(bucket.Id, uploadId, UploadStatus.Completed),
             partByUploadIdRepository.Delete(bucket.Id, uploadId),
             bucketByIdRepository.IncrementObjectsCount(bucket.Id),
-            bucketByIdRepository.IncrementSizeInBytesCount(bucket.Id, metadata.SizeInBytes)
-        ]);
+            bucketByIdRepository.IncrementSizeInBytesCount(bucket.Id, metadata.SizeInBytes),
+            divisionRepository.IncrementObjectsCount(bucket.Id, Enum.Parse<DivisionType.SizeType>(objectToComplete.DivisionSizeType), objectToComplete.DivisionId),
+        ];
+        
+        var prefixes = FolderPrefixesRetriever.GetFolderPrefixes(bucket.Id, objectToComplete.FileKey, objectToComplete.Id);
+
+        tasks.AddRange(prefixes.Select(folderPrefixByParentPrefixRepository.Create));
+        
+        await Task.WhenAll(tasks);
 
         Directory.Delete(pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory), true);
 

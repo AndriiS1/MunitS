@@ -41,7 +41,6 @@ public static class ObjectResponseMappers
     {
         return new FolderByPrefixResponse
         {
-            Id = folder.Id.ToString(),
             Prefix = folder.Prefix,
         };
     }

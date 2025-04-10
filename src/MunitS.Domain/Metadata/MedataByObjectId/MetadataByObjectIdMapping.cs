@@ -8,7 +8,7 @@ public class MetadataByObjectIdMapping : Mappings
     public MetadataByObjectIdMapping()
     {
         For<MetadataByObjectId>()
-            .PartitionKey(c => c.BucketId, c => c.ObjectId)
+            .PartitionKey(c => c.BucketId)
             .Column(c => c.BucketId, cm => cm.WithName("bucket_id"))
             .Column(c => c.UploadId, cm => cm.WithName("upload_id"))
             .Column(c => c.ObjectId, cm => cm.WithName("object_id"))
