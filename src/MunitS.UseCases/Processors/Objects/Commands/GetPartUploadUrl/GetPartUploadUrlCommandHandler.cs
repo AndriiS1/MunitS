@@ -21,7 +21,7 @@ public class GetPartUploadUrlCommandHandler(IOptions<StorageOptions> options,
 
         if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {command.Request.BucketId} is not found."));
 
-        var @object = await objectByBucketIdRepository.GetByUploadId(bucket.Id, Guid.Parse(command.Request.BucketId));
+        var @object = await objectByBucketIdRepository.GetByUploadId(bucket.Id, Guid.Parse(command.Request.UploadId));
 
         if (@object == null) throw new RpcException(new Status(StatusCode.NotFound, "Object with name is not found."));
 
@@ -32,7 +32,7 @@ public class GetPartUploadUrlCommandHandler(IOptions<StorageOptions> options,
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(options.Value.SignatureSecret));
         var signatureBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(dataToSign));
         var signature = Convert.ToHexString(signatureBytes).ToLowerInvariant();
-        
+
         var query = $"?bucketId={bucket.Id}&partNumber={command.Request.PartNumber}&expiresAt={expirationUnix}&signature={signature}";
 
         var url = $"{options.Value.BaseUrl}/objects/upload/{command.Request.UploadId}/parts/{query}";

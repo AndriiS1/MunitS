@@ -5,7 +5,6 @@ public class ObjectByBucketId
 {
     public required Guid Id { get; init; }
     public required Guid BucketId { get; init; }
-    public required Guid VersionId { get; init; }
     public required Guid UploadId { get; init; }
     public required Guid DivisionId { get; init; }
     public required string FileKey { get; init; }
@@ -19,18 +18,15 @@ public class ObjectByBucketId
     public static ObjectByBucketId Create(Guid bucketId, Guid divisionId, string fileKey, string fileName,
         DateTimeOffset initiatedAt, DivisionType.SizeType divisionSizeType, string extension)
     {
-        var id = Guid.NewGuid();
-        var versionId = Guid.NewGuid();
         return new ObjectByBucketId
         {
-            Id = id,
+            Id = Guid.NewGuid(),
             BucketId = bucketId,
             FileKey = fileKey,
             FileName = fileName,
             DivisionId = divisionId,
             InitiatedAt = initiatedAt,
             UploadId = Guid.NewGuid(),
-            VersionId = versionId,
             DivisionSizeType = divisionSizeType.ToString(),
             UploadStatus = Object.ObjectByBucketId.UploadStatus.Instantiated.ToString(),
             Extension = extension

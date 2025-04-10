@@ -35,15 +35,15 @@ public class UploadPartCommandHandler(IBucketByIdRepository bucketByIdRepository
 
         await using var stream = File.Create(absolutePartPath);
 
-        await command.PartData.CopyToAsync(stream, cancellationToken);
-
-        stream.Position = 0;
-
-        await using var md5Stream = File.OpenRead(absolutePartPath);
-
         using var md5 = MD5.Create();
-        var hash = await md5.ComputeHashAsync(md5Stream, cancellationToken);
-        var etag = Convert.ToHexString(hash).ToLowerInvariant();
+        
+        await using (var cryptoStream = new CryptoStream(stream, md5, CryptoStreamMode.Write))
+        {
+            await command.PartData.CopyToAsync(cryptoStream, cancellationToken);
+        }
+        
+        var hash = md5.Hash;
+        var etag = Convert.ToHexString(hash!).ToLowerInvariant();
 
         var partByUploadId = PartByUploadId.Create(bucket.Id, command.UploadId, etag, command.PartNumber);
         await partByUploadIdRepository.Create(partByUploadId);

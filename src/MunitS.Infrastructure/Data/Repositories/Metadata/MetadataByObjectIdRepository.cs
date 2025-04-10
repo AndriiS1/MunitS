@@ -15,6 +15,6 @@ public class MetadataByObjectIdRepository(CassandraConnector connector) : IMetad
     public async Task Delete(Guid bucketId, Guid objectId, Guid versionId)
     {
         await _metadata.Where(o => o.ObjectId == objectId &&
-                                   o.BucketId == bucketId && o.VersionId == versionId).Delete().ExecuteAsync();
+                                   o.BucketId == bucketId && o.UploadId == versionId).Delete().ExecuteAsync();
     }
 }

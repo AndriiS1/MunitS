@@ -23,10 +23,10 @@ public class MetadataBuilder(IMetadataByObjectIdRepository metadataByObjectIdRep
     {
         var insertTasks = _metadataByObjectIds.Select(metadataByObjectIdRepository.Create);
 
-        var deleteTasks = _objectByParentPrefixesToDelete.Select(o => metadataByObjectIdRepository.Delete(o.BucketId, o.ObjectId, o.VersionId));
+        var deleteTasks = _objectByParentPrefixesToDelete.Select(o => metadataByObjectIdRepository.Delete(o.BucketId, o.ObjectId, o.UploadId));
 
         await Task.WhenAll(insertTasks.Concat(deleteTasks));
     }
 
-    public sealed record DeleteMetadataByObjectId(Guid BucketId, Guid ObjectId, Guid VersionId);
+    public sealed record DeleteMetadataByObjectId(Guid BucketId, Guid ObjectId, Guid UploadId);
 }

@@ -16,12 +16,11 @@ public static class ObjectsEndpoints
     {
         app.MapPut("objects/upload/{uploadId}/parts", UploadObject)
             .WithGroupName(Source)
-            .DisableAntiforgery()
-            .RequireAuthorization();
+            .DisableAntiforgery();
     }
 
     private static async Task<IResult> UploadObject([FromRoute] string uploadId, [FromQuery] string bucketId,
-        [FromQuery] int partNumber, [FromQuery] long expiresAt, [FromQuery] string signature, [FromBody] IFormFile file,
+        [FromQuery] int partNumber, [FromQuery] long expiresAt, [FromQuery] string signature, [FromForm] IFormFile file,
         [FromServices] IMediator mediator, [FromServices] IOptions<StorageOptions> options)
     {
         if (!ValidateSignedUrl(uploadId, bucketId, partNumber, expiresAt, signature, options.Value.SignatureSecret))
@@ -29,10 +28,8 @@ public static class ObjectsEndpoints
             return Results.Forbid();
         }
 
-        await mediator.Send(new UploadPartCommand(Guid.Parse(bucketId),
+        return await mediator.Send(new UploadPartCommand(Guid.Parse(bucketId),
             Guid.Parse(uploadId), file, partNumber));
-
-        return Results.Ok();
     }
 
     private static bool ValidateSignedUrl(string uploadId, string bucketId, int partNumber, long expiresAt, string signature, string signatureSecret)

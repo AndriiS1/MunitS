@@ -7,11 +7,12 @@ using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
+using MunitS.UseCases.Processors.Service.PathRetriever;
 using MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
 namespace MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
 
 public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository objectByBucketIdRepository,
-    IBucketByIdRepository bucketByIdRepository,
+    IBucketByIdRepository bucketByIdRepository, IPathRetriever pathRetriever,
     IPartByUploadIdRepository partByUploadIdRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CompleteMultipartUploadCommand command, CancellationToken cancellationToken)
@@ -29,7 +30,7 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             throw new RpcException(new Status(StatusCode.NotFound, "There is no instantiated object."));
         }
 
-        if (Enum.Parse<UploadStatus>(objectToComplete.UploadStatus) == UploadStatus.UploadCompleted)
+        if (Enum.Parse<UploadStatus>(objectToComplete.UploadStatus) == UploadStatus.Completed)
         {
             throw new RpcException(new Status(StatusCode.Aborted, "Object upload is already completed."));
         }
@@ -43,20 +44,22 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
 
         var objectDirectories = new ObjectDirectories(bucket.Name, objectToComplete);
         var objectVersionPath = new ObjectVersionPath(objectDirectories.ObjectVersionDirectory, objectToComplete.Extension);
-            
-        await using var finalFile = File.Create(objectVersionPath.Value);
-        
+        var absoluteObjectVersionPath = pathRetriever.GetAbsoluteDirectoryPath(objectVersionPath);
+
+        await using var finalFile = File.Create(absoluteObjectVersionPath);
+
         foreach (var part in parts.OrderBy(p => p.Number))
         {
-            var partPath = new PartPath(objectDirectories.TempObjectVersionDirectory, part.Number);
-            
-            await using var partStream = File.OpenRead(partPath.Value);
+            var absolutePartPath = pathRetriever.GetAbsoluteDirectoryPath(new PartPath(objectDirectories.TempObjectVersionDirectory, part.Number));
+
+            await using var partStream = File.OpenRead(absolutePartPath);
             await partStream.CopyToAsync(finalFile, cancellationToken);
         }
-        
-        await objectByBucketIdRepository.UpdateUploadStatus(bucket.Id, uploadId, UploadStatus.UploadCompleted);
+
+        await objectByBucketIdRepository.UpdateUploadStatus(bucket.Id, uploadId, UploadStatus.Completed);
         await partByUploadIdRepository.Delete(bucket.Id, uploadId);
-        
+        Directory.Delete(pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory), true);
+
         return new ObjectServiceStatusResponse
         {
             Status = "Success"

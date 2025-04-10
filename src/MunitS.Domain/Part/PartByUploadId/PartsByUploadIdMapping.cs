@@ -14,6 +14,6 @@ public class PartsByUploadIdMapping : Mappings
             .Column(c => c.BucketId, cm => cm.WithName("bucket_id"))
             .Column(c => c.UploadId, cm => cm.WithName("upload_id"))
             .Column(c => c.Number, cm => cm.WithName("number"))
-            .Column(c => c.ETag, cm => cm.WithName("e_tag"));
+            .Column(c => c.ETag, cm => cm.WithName("etag"));
     }
 }

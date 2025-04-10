@@ -13,7 +13,7 @@ public class ObjectDirectories
         BucketDirectory = new BucketDirectory(bucketName);
         DivisionDirectory = new DivisionDirectory(bucketName, objectByBucketId.DivisionId, divisionSizeType);
         ObjectDirectory = new ObjectDirectory(DivisionDirectory, objectByBucketId.Id);
-        ObjectVersionDirectory = new ObjectVersionDirectory(ObjectDirectory, objectByBucketId.VersionId);
+        ObjectVersionDirectory = new ObjectVersionDirectory(ObjectDirectory, objectByBucketId.UploadId);
         TempObjectVersionDirectory = new TempObjectVersionDirectory(ObjectVersionDirectory);
     }
     public BucketDirectory BucketDirectory { get; }

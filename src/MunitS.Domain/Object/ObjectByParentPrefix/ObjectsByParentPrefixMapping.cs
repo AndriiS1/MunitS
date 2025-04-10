@@ -15,7 +15,7 @@ public class ObjectsByParentPrefixMapping : Mappings
             .Column(c => c.FileName, cm => cm.WithName("file_name"))
             .Column(c => c.ParentPrefix, cm => cm.WithName("parent_prefix"))
             .Column(c => c.InitiatedAt, cm => cm.WithName("initiated_at"))
-            .Column(c => c.InitiatedAt, cm => cm.WithName("upload_id"))
+            .Column(c => c.UploadId, cm => cm.WithName("upload_id"))
             .Column(c => c.UploadedAt, cm => cm.WithName("uploaded_at"));
     }
 }

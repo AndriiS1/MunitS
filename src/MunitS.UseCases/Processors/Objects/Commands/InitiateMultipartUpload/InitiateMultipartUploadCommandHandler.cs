@@ -4,21 +4,22 @@ using MunitS.Domain.Directory;
 using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Metadata.MedataByObjectId;
 using MunitS.Domain.Object.ObjectByBucketId;
+using MunitS.Domain.Object.ObjectByFileKey;
 using MunitS.Domain.Object.ObjectByParentPrefix;
 using MunitS.Domain.Rules;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Division;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Protos;
-using MunitS.UseCases.Processors.Objects.Services;
 using MunitS.UseCases.Processors.Objects.Services.DivisionBuilder;
 using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
+using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 using MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
 namespace MunitS.UseCases.Processors.Objects.Commands.InitiateMultipartUpload;
 
 public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilder,
-    IObjectByBucketIdRepository objectByBucketIdRepository,
+    IObjectByFileKeyRepository objectByFileKeyRepository,
     IBucketByIdRepository bucketByIdRepository,
     IPathRetriever pathRetriever,
     IDivisionRepository divisionRepository,
@@ -31,7 +32,7 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
 
         if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {command.Request.BucketId} is not found."));
 
-        var objects = await objectByBucketIdRepository.GetAll(bucket.Id, command.Request.FileKey);
+        var objects = await objectByFileKeyRepository.GetAll(bucket.Id, command.Request.FileKey);
 
         if (objects.Any(o => Enum.Parse<UploadStatus>(o.UploadStatus) == UploadStatus.Instantiated))
         {
@@ -58,26 +59,28 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
         var fileName = FileKeyRule.GetFileName(command.Request.FileKey);
         var initiatedAt = DateTimeOffset.UtcNow;
 
-        var objectByFileKey = ObjectByBucketId.Create(bucket.Id, division.Id, command.Request.FileKey,
+        var objectByBucketId = ObjectByBucketId.Create(bucket.Id, division.Id, command.Request.FileKey,
             fileName, initiatedAt, Enum.Parse<DivisionType.SizeType>(division.Type), FileKeyRule.GetExtension(command.Request.FileKey));
-        var objectByParentPrefix = ObjectByParentPrefix.Create(objectByFileKey.Id, bucket.Id, fileName, objectByFileKey.UploadId, FileKeyRule.GetParentPrefix(command.Request.FileKey), initiatedAt);
-        var metadataByObjectId = MetadataByObjectId.Create(bucket.Id, objectByFileKey.VersionId, objectByFileKey.Id, command.Request.ContentType, command.Request.SizeInBytes);
+        var objectByParentPrefix = ObjectByParentPrefix.Create(objectByBucketId.Id, bucket.Id, fileName, objectByBucketId.UploadId, FileKeyRule.GetParentPrefix(command.Request.FileKey), initiatedAt);
+        var objectByFileKey = ObjectByFileKey.Create(bucket.Id, objectByBucketId.Id, objectByBucketId.UploadId, command.Request.FileKey);
+        var metadataByObjectId = MetadataByObjectId.Create(bucket.Id, objectByBucketId.UploadId, objectByBucketId.Id, command.Request.ContentType, command.Request.SizeInBytes);
 
-        var objectDirectories = new ObjectDirectories(bucket.Name, objectByFileKey);
+        var objectDirectories = new ObjectDirectories(bucket.Name, objectByBucketId);
 
         var absoluteObjectVersionedTempDirectory = pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory);
         Directory.CreateDirectory(absoluteObjectVersionedTempDirectory);
 
         await Task.WhenAll(objectsBuilder
-            .ToInsert(objectByFileKey)
+            .ToInsert(objectByBucketId)
             .ToInsert(objectByParentPrefix)
+            .ToInsert(objectByFileKey)
             .Build(), metadataBuilder
             .ToInsert(metadataByObjectId)
             .Build());
 
         return new InitiateMultipartUploadResponse
         {
-            UploadId = objectByFileKey.UploadId.ToString()
+            UploadId = objectByBucketId.UploadId.ToString()
         };
     }
 }

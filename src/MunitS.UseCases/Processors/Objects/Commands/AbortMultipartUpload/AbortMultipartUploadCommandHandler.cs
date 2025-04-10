@@ -3,9 +3,9 @@ using MediatR;
 using MunitS.Domain.Rules;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
-using MunitS.UseCases.Processors.Objects.Services;
 using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Service.PathRetriever;
@@ -13,6 +13,7 @@ using MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
 namespace MunitS.UseCases.Processors.Objects.Commands.AbortMultipartUpload;
 
 public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository objectByBucketIdRepository,
+    IObjectByFileKeyRepository objectByFileKeyRepository,
     IBucketByIdRepository bucketByIdRepository,
     IObjectsBuilder objectsBuilder,
     IPathRetriever pathRetriever,
@@ -32,7 +33,7 @@ public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository obje
             throw new RpcException(new Status(StatusCode.NotFound, "There is no instantiated object."));
         }
 
-        var objects = (await objectByBucketIdRepository.GetAll(bucket.Id, objectToAbort.FileKey)).Where(o => o.VersionId != objectToAbort.VersionId);
+        var objects = (await objectByFileKeyRepository.GetAll(bucket.Id, objectToAbort.FileKey)).Where(o => o.UploadId != objectToAbort.UploadId);
 
         var objectDirectories = new ObjectDirectories(bucket.Name, objectToAbort);
 
@@ -43,8 +44,9 @@ public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository obje
         await Task.WhenAll(objectsBuilder
             .ToDelete(new ObjectsBuilder.DeleteObjectByBucketId(bucket.Id, objectToAbort.UploadId))
             .ToDelete(new ObjectsBuilder.DeleteObjectByParentPrefix(bucket.Id, FileKeyRule.GetFileName(objectToAbort.FileKey), FileKeyRule.GetParentPrefix(objectToAbort.FileKey)))
+            .ToDelete(new ObjectsBuilder.DeleteObjectByFileKey(bucket.Id, objectToAbort.FileKey, objectToAbort.UploadId))
             .Build(), metadataBuilder
-            .ToDelete(new MetadataBuilder.DeleteMetadataByObjectId(bucket.Id, objectToAbort.Id, objectToAbort.VersionId))
+            .ToDelete(new MetadataBuilder.DeleteMetadataByObjectId(bucket.Id, objectToAbort.Id, objectToAbort.UploadId))
             .Build(), partByUploadIdRepository.Delete(bucket.Id, objectToAbort.UploadId));
 
         return new ObjectServiceStatusResponse
