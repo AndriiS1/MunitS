@@ -67,15 +67,16 @@ CREATE TABLE objects_by_parent_prefix (
     uploaded_at TIMESTAMP,
     upload_id UUID,
     initiated_at TIMESTAMP,
-    PRIMARY KEY ((bucket_id, parent_prefix), file_name)
+    PRIMARY KEY ((bucket_id), parent_prefix, file_name)
 );
 
 DROP TABLE IF EXISTS folder_prefixes_by_parent_prefix;
 CREATE TABLE folder_prefixes_by_parent_prefix (
     bucket_id UUID,	
+    object_id UUID,
     parent_prefix TEXT,
     prefix TEXT,
-    PRIMARY KEY ((bucket_id, parent_prefix), prefix)
+    PRIMARY KEY ((bucket_id), parent_prefix, object_id)
 );
 
 DROP TABLE IF EXISTS metadata_by_object_id;
@@ -97,7 +98,7 @@ CREATE TABLE parts_by_upload_id (
     upload_id UUID,
     etag TEXT,
     number INT,
-    PRIMARY KEY ((bucket_id, upload_id), number)
+    PRIMARY KEY ((bucket_id), upload_id, number)
 );
 ```
 
