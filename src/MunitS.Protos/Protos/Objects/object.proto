@@ -19,7 +19,7 @@ message InitiateMultipartUploadRequest {
   string bucketId = 1;
   string fileKey = 2;
   int64 sizeInBytes = 3;
-  string contentType = 4;
+  string mimeType = 4;
 }
 
 message InitiateMultipartUploadResponse {

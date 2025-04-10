@@ -4,6 +4,7 @@ using MunitS.Domain.Directory;
 using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
+using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
@@ -12,7 +13,7 @@ using MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
 namespace MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
 
 public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository objectByBucketIdRepository,
-    IBucketByIdRepository bucketByIdRepository, IPathRetriever pathRetriever,
+    IBucketByIdRepository bucketByIdRepository, IPathRetriever pathRetriever, IMetadataByObjectIdRepository metadataByObjectIdRepository,
     IPartByUploadIdRepository partByUploadIdRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CompleteMultipartUploadCommand command, CancellationToken cancellationToken)
@@ -28,6 +29,13 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
         if (objectToComplete is null)
         {
             throw new RpcException(new Status(StatusCode.NotFound, "There is no instantiated object."));
+        }
+        
+        var metadata = await metadataByObjectIdRepository.Get(bucket.Id, uploadId);
+        
+        if (metadata is null)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, "Cannot find metadata for object version."));
         }
 
         if (Enum.Parse<UploadStatus>(objectToComplete.UploadStatus) == UploadStatus.Completed)
@@ -56,8 +64,13 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             await partStream.CopyToAsync(finalFile, cancellationToken);
         }
 
-        await objectByBucketIdRepository.UpdateUploadStatus(bucket.Id, uploadId, UploadStatus.Completed);
-        await partByUploadIdRepository.Delete(bucket.Id, uploadId);
+        await Task.WhenAll([
+            objectByBucketIdRepository.UpdateUploadStatus(bucket.Id, uploadId, UploadStatus.Completed),
+            partByUploadIdRepository.Delete(bucket.Id, uploadId),
+            bucketByIdRepository.IncrementObjectsCount(bucket.Id),
+            bucketByIdRepository.IncrementSizeInBytesCount(bucket.Id, metadata.SizeInBytes)
+        ]);
+
         Directory.Delete(pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory), true);
 
         return new ObjectServiceStatusResponse

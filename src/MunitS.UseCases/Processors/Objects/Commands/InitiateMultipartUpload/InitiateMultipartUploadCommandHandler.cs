@@ -63,7 +63,7 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
             fileName, initiatedAt, Enum.Parse<DivisionType.SizeType>(division.Type), FileKeyRule.GetExtension(command.Request.FileKey));
         var objectByParentPrefix = ObjectByParentPrefix.Create(objectByBucketId.Id, bucket.Id, fileName, objectByBucketId.UploadId, FileKeyRule.GetParentPrefix(command.Request.FileKey), initiatedAt);
         var objectByFileKey = ObjectByFileKey.Create(bucket.Id, objectByBucketId.Id, objectByBucketId.UploadId, command.Request.FileKey);
-        var metadataByObjectId = MetadataByObjectId.Create(bucket.Id, objectByBucketId.UploadId, objectByBucketId.Id, command.Request.ContentType, command.Request.SizeInBytes);
+        var metadataByObjectId = MetadataByObjectId.Create(bucket.Id, objectByBucketId.UploadId, objectByBucketId.Id, command.Request.MimeType, command.Request.SizeInBytes);
 
         var objectDirectories = new ObjectDirectories(bucket.Name, objectByBucketId);
 

@@ -7,4 +7,6 @@ public interface IBucketByIdRepository
     Task<List<BucketById>> GetAll(Guid[] bucketIds);
     Task Create(BucketById bucketById);
     Task Delete(Guid bucketId);
+    Task IncrementObjectsCount(Guid bucketId, long increment = 1);
+    Task IncrementSizeInBytesCount(Guid bucketId, long increment);
 }

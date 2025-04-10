@@ -3,7 +3,7 @@ namespace MunitS.Infrastructure.Data.Repositories.Metadata;
 
 public interface IMetadataByObjectIdRepository
 {
+    Task<MetadataByObjectId?> Get(Guid bucketId, Guid uploadId);
     Task Create(MetadataByObjectId metadataByObjectId);
-
-    Task Delete(Guid bucketId, Guid objectId, Guid versionId);
+    Task Delete(Guid bucketId, Guid uploadId);
 }

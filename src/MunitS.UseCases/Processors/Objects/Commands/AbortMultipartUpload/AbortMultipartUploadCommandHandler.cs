@@ -46,7 +46,7 @@ public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository obje
             .ToDelete(new ObjectsBuilder.DeleteObjectByParentPrefix(bucket.Id, FileKeyRule.GetFileName(objectToAbort.FileKey), FileKeyRule.GetParentPrefix(objectToAbort.FileKey)))
             .ToDelete(new ObjectsBuilder.DeleteObjectByFileKey(bucket.Id, objectToAbort.FileKey, objectToAbort.UploadId))
             .Build(), metadataBuilder
-            .ToDelete(new MetadataBuilder.DeleteMetadataByObjectId(bucket.Id, objectToAbort.Id, objectToAbort.UploadId))
+            .ToDelete(new MetadataBuilder.DeleteMetadataByObjectId(bucket.Id, objectToAbort.UploadId))
             .Build(), partByUploadIdRepository.Delete(bucket.Id, objectToAbort.UploadId));
 
         return new ObjectServiceStatusResponse

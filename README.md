@@ -7,8 +7,8 @@ CREATE TABLE buckets_by_id (
     name TEXT,
     versioning_enabled BOOLEAN,
     versions_limit INT,
-    objects_count BIGINT,
-    size_in_bytes BIGINT,
+    objects_count COUNTER,
+    size_in_bytes COUNTER,
     PRIMARY KEY ((id))
 );
 
@@ -25,7 +25,7 @@ CREATE TABLE divisions_by_bucket_id (
     type TEXT,
     name TEXT,
     id UUID,
-    objects_count BIGINT,
+    objects_count COUNTER,
     objects_limit BIGINT,
     path TEXT,
     PRIMARY KEY ((bucket_id, type), id)
@@ -84,11 +84,11 @@ CREATE TABLE metadata_by_object_id (
     bucket_id UUID,
     upload_id UUID,
     object_id UUID,
-    content_type TEXT,
+    mime_type TEXT,
     size_in_bytes BIGINT,
     custom_metadata MAP<TEXT, TEXT>,
     tags MAP<TEXT, TEXT>,
-    PRIMARY KEY ((bucket_id, object_id), upload_id)
+    PRIMARY KEY ((bucket_id), upload_id)
 );
 
 DROP TABLE IF EXISTS parts_by_upload_id;
