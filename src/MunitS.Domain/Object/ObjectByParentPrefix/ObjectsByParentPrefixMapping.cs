@@ -9,7 +9,7 @@ public class ObjectsByParentPrefixMapping : Mappings
     {
         For<ObjectByParentPrefix>()
             .TableName(TableName)
-            .PartitionKey(c => c.BucketId, c => c.ParentPrefix)
+            .PartitionKey(c => c.BucketId)
             .Column(c => c.Id, cm => cm.WithName("id"))
             .Column(c => c.BucketId, cm => cm.WithName("bucket_id"))
             .Column(c => c.FileName, cm => cm.WithName("file_name"))

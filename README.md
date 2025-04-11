@@ -7,6 +7,12 @@ CREATE TABLE buckets_by_id (
     name TEXT,
     versioning_enabled BOOLEAN,
     versions_limit INT,
+    PRIMARY KEY ((id))
+);
+
+DROP TABLE IF EXISTS bucket_counters;
+CREATE TABLE bucket_counters (
+    id UUID,
     objects_count COUNTER,
     size_in_bytes COUNTER,
     PRIMARY KEY ((id))
@@ -25,9 +31,16 @@ CREATE TABLE divisions_by_bucket_id (
     type TEXT,
     name TEXT,
     id UUID,
-    objects_count COUNTER,
     objects_limit BIGINT,
-    path TEXT,
+    PRIMARY KEY ((bucket_id, type), id)
+);
+
+DROP TABLE IF EXISTS division_counters;
+CREATE TABLE division_counters (
+    bucket_id UUID,
+    type TEXT,
+    id UUID,
+    objects_count COUNTER,
     PRIMARY KEY ((bucket_id, type), id)
 );
 
@@ -72,11 +85,10 @@ CREATE TABLE objects_by_parent_prefix (
 
 DROP TABLE IF EXISTS folder_prefixes_by_parent_prefix;
 CREATE TABLE folder_prefixes_by_parent_prefix (
-    bucket_id UUID,	
-    object_id UUID,
+    bucket_id UUID,
     parent_prefix TEXT,
     prefix TEXT,
-    PRIMARY KEY ((bucket_id), parent_prefix, object_id)
+    PRIMARY KEY ((bucket_id), parent_prefix)
 );
 
 DROP TABLE IF EXISTS metadata_by_object_id;

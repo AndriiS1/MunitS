@@ -7,9 +7,7 @@ public class BucketById
     public required string Name { get; init; }
     public required bool VersioningEnabled { get; init; }
     public required int VersionsLimit { get; init; }
-    public required long ObjectsCount { get; init; }
-    public required long SizeInBytes { get; init; }
-    
+
     public static BucketById Create(string name, bool versioningEnabled, int versionsLimit)
     {
         return new BucketById
@@ -17,9 +15,7 @@ public class BucketById
             Id = Guid.NewGuid(),
             Name = name,
             VersioningEnabled = versioningEnabled,
-            VersionsLimit = versionsLimit,
-            ObjectsCount = 0,
-            SizeInBytes = 0
+            VersionsLimit = versionsLimit
         };
     }
 }

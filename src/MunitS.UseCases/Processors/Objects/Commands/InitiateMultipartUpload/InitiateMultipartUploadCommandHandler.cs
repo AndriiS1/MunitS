@@ -9,7 +9,8 @@ using MunitS.Domain.Object.ObjectByFileKey;
 using MunitS.Domain.Object.ObjectByParentPrefix;
 using MunitS.Domain.Rules;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
-using MunitS.Infrastructure.Data.Repositories.Division;
+using MunitS.Infrastructure.Data.Repositories.Division.DivisionById;
+using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services.DivisionBuilder;
@@ -22,8 +23,9 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
     IObjectByFileKeyRepository objectByFileKeyRepository,
     IBucketByIdRepository bucketByIdRepository,
     IPathRetriever pathRetriever,
-    IDivisionRepository divisionRepository,
+    IDivisionByIdRepository divisionByIdRepository,
     IDivisionBuilder divisionBuilder,
+    IDivisionCounterRepository divisionCounterRepository,
     IMetadataBuilder metadataBuilder) : IRequestHandler<InitiateMultipartUploadCommand, InitiateMultipartUploadResponse>
 {
     public async Task<InitiateMultipartUploadResponse> Handle(InitiateMultipartUploadCommand command, CancellationToken cancellationToken)
@@ -41,7 +43,12 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
 
         var divisionType = new DivisionType(command.Request.SizeInBytes);
 
-        var division = await divisionRepository.GetNotFull(Guid.Parse(command.Request.BucketId), divisionType);
+        var bucketDivisions = await divisionByIdRepository.GetAll(bucket.Id, divisionType.Type);
+
+        var divisionCounters = await divisionCounterRepository.GetAll(bucket.Id, divisionType.Type);
+
+        var division = bucketDivisions.FirstOrDefault(d => divisionCounters
+            .FirstOrDefault(c => c.Id == d.Id)?.ObjectsCount < d.ObjectsLimit);
 
         if (division == null)
         {

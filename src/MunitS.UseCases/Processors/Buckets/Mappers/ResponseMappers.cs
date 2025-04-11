@@ -1,14 +1,23 @@
 using MunitS.Domain.Bucket.BucketById;
+using MunitS.Domain.Bucket.BucketCounter;
 using MunitS.Protos;
 namespace MunitS.UseCases.Processors.Buckets.Mappers;
 
 public static class ResponseMappers
 {
-    public static GetBucketResponse FormatGetBucketResponse(BucketById bucketById)
+    public static GetBucketResponse FormatGetBucketResponse(BucketById bucketById, BucketCounter bucketCounter)
     {
         return new GetBucketResponse
         {
-            Content = FormatBucketResponse(bucketById)
+            Content = new ExtendedBucketResponse
+            {
+                Id = bucketById.Id.ToString(),
+                Name = bucketById.Name,
+                VersioningEnabled = bucketById.VersioningEnabled,
+                VersionsLimit = bucketById.VersionsLimit,
+                ObjectsCount = bucketCounter.ObjectsCount,
+                Size = bucketCounter.SizeInBytes
+            }
         };
     }
 
@@ -18,18 +27,16 @@ public static class ResponseMappers
         {
             Id = bucketById.Id.ToString(),
             Name = bucketById.Name,
-            ObjectsCount = bucketById.ObjectsCount,
-            Size = bucketById.SizeInBytes,
             VersioningEnabled = bucketById.VersioningEnabled,
-            VersionsLimit = bucketById.VersionsLimit,
+            VersionsLimit = bucketById.VersionsLimit
         };
     }
-    
+
     public static GetBucketsResponse FormatGetBucketsResponse(List<BucketById> buckets)
     {
         var response = new GetBucketsResponse();
         response.Content.AddRange(buckets.Select(FormatBucketResponse));
-        
+
         return response;
     }
 }

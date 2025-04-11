@@ -1,7 +1,7 @@
 using Grpc.Core;
 using MediatR;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
-using MunitS.Infrastructure.Data.Repositories.Division;
+using MunitS.Infrastructure.Data.Repositories.Division.DivisionById;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Protos;
@@ -16,7 +16,7 @@ public class DeleteObjectCommandHandler(IObjectsBuilder objectsBuilder,
     IBucketByIdRepository bucketByIdRepository,
     IObjectByBucketIdRepository objectByBucketIdRepository,
     IPathRetriever pathRetriever,
-    IDivisionRepository divisionRepository,
+    IDivisionByIdRepository divisionByIdRepository,
     IDivisionBuilder divisionBuilder,
     IMetadataBuilder metadataBuilder) : IRequestHandler<DeleteObjectCommand, InitiateMultipartUploadResponse>
 {

@@ -16,24 +16,6 @@ public class BucketByIdByIdRepository(CassandraConnector connector) : IBucketByI
         return (await _buckets.Where(b => bucketIds.Contains(b.Id)).ExecuteAsync()).ToList();
     }
 
-    public async Task IncrementObjectsCount(Guid bucketId, long increment = 1)
-    {
-        const string cql = $"UPDATE {BucketsByIdMapping.TableName} SET {BucketsByIdMapping.ObjectsCount} = {BucketsByIdMapping.ObjectsCount} + ? WHERE id = ?";
-
-        var prepared = await _buckets.GetSession().PrepareAsync(cql);
-        var bound = prepared.Bind(increment, bucketId);
-        await _buckets.GetSession().ExecuteAsync(bound).ConfigureAwait(false);
-    }
-
-    public async Task IncrementSizeInBytesCount(Guid bucketId, long increment)
-    {
-        const string cql = $"UPDATE {BucketsByIdMapping.TableName} SET {BucketsByIdMapping.SizeInBytes} = {BucketsByIdMapping.SizeInBytes} + ? WHERE id = ?";
-
-        var prepared = await _buckets.GetSession().PrepareAsync(cql);
-        var bound = prepared.Bind(increment, bucketId);
-        await _buckets.GetSession().ExecuteAsync(bound).ConfigureAwait(false);
-    }
-
     public async Task Create(BucketById bucketById)
     {
         await _buckets.Insert(bucketById).ExecuteAsync();

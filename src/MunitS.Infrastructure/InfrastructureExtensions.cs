@@ -4,7 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MunitS.Domain.Bucket.BucketById;
 using MunitS.Domain.Bucket.BucketByName;
+using MunitS.Domain.Bucket.BucketCounter;
 using MunitS.Domain.Division.DivisionByBucketId;
+using MunitS.Domain.Division.DivisionCounter;
 using MunitS.Domain.FolderPrefixes.FolderPrefixByParentPrefix;
 using MunitS.Domain.Metadata.MedataByObjectId;
 using MunitS.Domain.Object.ObjectByBucketId;
@@ -14,7 +16,9 @@ using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByNameRepository;
-using MunitS.Infrastructure.Data.Repositories.Division;
+using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
+using MunitS.Infrastructure.Data.Repositories.Division.DivisionById;
+using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
 using MunitS.Infrastructure.Data.Repositories.FolderPrefix.FolderPrefixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
@@ -55,7 +59,9 @@ public static class InfrastructureExtensions
 
         MappingConfiguration.Global.Define<BucketsByIdMapping>();
         MappingConfiguration.Global.Define<BucketsByNameMapping>();
+        MappingConfiguration.Global.Define<BucketCountersMapping>();
         MappingConfiguration.Global.Define<DivisionsByBucketIdMapping>();
+        MappingConfiguration.Global.Define<DivisionCountersMapping>();
         MappingConfiguration.Global.Define<MetadataByObjectIdMapping>();
         MappingConfiguration.Global.Define<PartsByUploadIdMapping>();
         MappingConfiguration.Global.Define<ObjectsByBucketIdMapping>();
@@ -68,12 +74,14 @@ public static class InfrastructureExtensions
     {
         builder.Services.AddSingleton<IPartByUploadIdRepository, PartByUploadIdRepository>();
         builder.Services.AddSingleton<IBucketByIdRepository, BucketByIdByIdRepository>();
+        builder.Services.AddSingleton<IBucketCounterRepository, BucketCounterRepository>();
         builder.Services.AddSingleton<IBucketByNameRepository, BucketByIdByNameRepository>();
         builder.Services.AddSingleton<IMetadataByObjectIdRepository, MetadataByObjectIdRepository>();
         builder.Services.AddSingleton<IObjectByBucketIdRepository, ObjectByBucketIdRepository>();
         builder.Services.AddSingleton<IObjectByFileKeyRepository, ObjectByFileKeyRepository>();
         builder.Services.AddSingleton<IObjectByParentPrefixRepository, ObjectByParentPrefixRepository>();
-        builder.Services.AddSingleton<IDivisionRepository, DivisionRepository>();
+        builder.Services.AddSingleton<IDivisionByIdRepository, DivisionByIdRepository>();
+        builder.Services.AddSingleton<IDivisionCounterRepository, DivisionCounterRepository>();
         builder.Services.AddSingleton<IFolderPrefixByParentPrefixRepository, FolderPrefixByIdByParentPrefixRepository>();
     }
 }
