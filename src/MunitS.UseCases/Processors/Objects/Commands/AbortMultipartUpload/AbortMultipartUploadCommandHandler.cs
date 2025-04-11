@@ -1,5 +1,6 @@
 using Grpc.Core;
 using MediatR;
+using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Rules;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
@@ -9,7 +10,6 @@ using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Service.PathRetriever;
-using MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
 namespace MunitS.UseCases.Processors.Objects.Commands.AbortMultipartUpload;
 
 public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository objectByBucketIdRepository,
@@ -35,7 +35,7 @@ public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository obje
 
         var objects = (await objectByFileKeyRepository.GetAll(bucket.Id, objectToAbort.FileKey)).Where(o => o.UploadId != objectToAbort.UploadId);
 
-        var objectDirectories = new ObjectDirectories(bucket.Name, objectToAbort);
+        var objectDirectories = new ObjectVersionDirectories(bucket.Name, objectToAbort);
 
         Directory.Delete(objects.Any() ?
             pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.ObjectVersionDirectory) :

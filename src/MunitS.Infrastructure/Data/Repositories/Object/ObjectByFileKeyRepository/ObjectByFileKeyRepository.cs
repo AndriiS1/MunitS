@@ -1,4 +1,5 @@
 using Cassandra.Data.Linq;
+using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Object.ObjectByFileKey;
 namespace MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 
@@ -13,9 +14,21 @@ public class ObjectByFileKeyRepository(CassandraConnector connector) : IObjectBy
 
     public async Task Delete(Guid bucketId, string fileKey, Guid uploadId)
     {
-        await _objects.Where(o => o.FileKey == fileKey && o.BucketId == bucketId).Delete().ExecuteAsync();
+        await _objects.Where(o => o.FileKey == fileKey && o.BucketId == bucketId && o.UploadId == uploadId).Delete().ExecuteAsync();
     }
-
+    
+    public async Task UpdateUploadStatus(Guid bucketId,string fileKey, Guid uploadId, UploadStatus status)
+    {
+        await _objects
+            .Where(o => o.BucketId == bucketId && o.FileKey == fileKey && o.UploadId == uploadId)
+            .Select(u => new
+            {
+                UploadStatus = status.ToString()
+            })
+            .Update()
+            .ExecuteAsync();
+    }
+    
     public async Task Create(ObjectByFileKey objectByFileKey)
     {
         await _objects.Insert(objectByFileKey).ExecuteAsync();

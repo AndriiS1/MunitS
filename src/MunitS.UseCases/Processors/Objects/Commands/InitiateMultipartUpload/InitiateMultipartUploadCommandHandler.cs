@@ -1,6 +1,7 @@
 using Grpc.Core;
 using MediatR;
 using MunitS.Domain.Directory;
+using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Metadata.MedataByObjectId;
 using MunitS.Domain.Object.ObjectByBucketId;
@@ -15,7 +16,6 @@ using MunitS.UseCases.Processors.Objects.Services.DivisionBuilder;
 using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Service.PathRetriever;
-using MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
 namespace MunitS.UseCases.Processors.Objects.Commands.InitiateMultipartUpload;
 
 public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilder,
@@ -58,14 +58,15 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
 
         var fileName = FileKeyRule.GetFileName(command.Request.FileKey);
         var initiatedAt = DateTimeOffset.UtcNow;
+        var divisionSizeType = Enum.Parse<DivisionType.SizeType>(division.Type);
 
         var objectByBucketId = ObjectByBucketId.Create(bucket.Id, division.Id, command.Request.FileKey,
-            fileName, initiatedAt, Enum.Parse<DivisionType.SizeType>(division.Type), FileKeyRule.GetExtension(command.Request.FileKey));
+            fileName, initiatedAt, divisionSizeType, FileKeyRule.GetExtension(command.Request.FileKey));
         var objectByParentPrefix = ObjectByParentPrefix.Create(objectByBucketId.Id, bucket.Id, fileName, objectByBucketId.UploadId, FileKeyRule.GetParentPrefix(command.Request.FileKey), initiatedAt);
         var objectByFileKey = ObjectByFileKey.Create(bucket.Id, objectByBucketId.Id, objectByBucketId.UploadId, command.Request.FileKey);
         var metadataByObjectId = MetadataByObjectId.Create(bucket.Id, objectByBucketId.UploadId, objectByBucketId.Id, command.Request.MimeType, command.Request.SizeInBytes);
 
-        var objectDirectories = new ObjectDirectories(bucket.Name, objectByBucketId);
+        var objectDirectories = new ObjectVersionDirectories(bucket.Name, objectByBucketId);
 
         var absoluteObjectVersionedTempDirectory = pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory);
         Directory.CreateDirectory(absoluteObjectVersionedTempDirectory);

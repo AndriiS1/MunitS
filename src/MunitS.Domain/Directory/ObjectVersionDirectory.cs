@@ -1,6 +1,6 @@
 namespace MunitS.Domain.Directory;
 
-public class ObjectVersionDirectory(ObjectDirectory objectDirectory, Guid versionId) : DirectoryBase
+public class ObjectVersionDirectory(ObjectDirectory objectDirectory, Guid uploadId) : DirectoryBase
 {
-    public override string Value { get; } = Path.Combine(objectDirectory.Value, versionId.ToString());
+    public override string Value { get; } = Path.Combine(objectDirectory.Value, uploadId.ToString());
 }

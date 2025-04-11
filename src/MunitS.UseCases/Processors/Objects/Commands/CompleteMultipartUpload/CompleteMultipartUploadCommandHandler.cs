@@ -1,6 +1,7 @@
 using Grpc.Core;
 using MediatR;
 using MunitS.Domain.Directory;
+using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Part.PartByUploadId;
@@ -9,16 +10,20 @@ using MunitS.Infrastructure.Data.Repositories.Division;
 using MunitS.Infrastructure.Data.Repositories.FolderPrefix.FolderPrefixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Service.ForlderPrefixesRetriever;
 using MunitS.UseCases.Processors.Service.PathRetriever;
-using MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
 namespace MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
 
 public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository objectByBucketIdRepository,
-    IBucketByIdRepository bucketByIdRepository, IPathRetriever pathRetriever, IMetadataByObjectIdRepository metadataByObjectIdRepository,
-    IPartByUploadIdRepository partByUploadIdRepository, IDivisionRepository divisionRepository,
+    IBucketByIdRepository bucketByIdRepository,
+    IPathRetriever pathRetriever,
+    IMetadataByObjectIdRepository metadataByObjectIdRepository,
+    IPartByUploadIdRepository partByUploadIdRepository,
+    IDivisionRepository divisionRepository,
+    IObjectByFileKeyRepository objectByFileKeyRepository,
     IFolderPrefixByParentPrefixRepository folderPrefixByParentPrefixRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CompleteMultipartUploadCommand command, CancellationToken cancellationToken)
@@ -35,9 +40,9 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
         {
             throw new RpcException(new Status(StatusCode.NotFound, "There is no instantiated object."));
         }
-        
+
         var metadata = await metadataByObjectIdRepository.Get(bucket.Id, uploadId);
-        
+
         if (metadata is null)
         {
             throw new RpcException(new Status(StatusCode.NotFound, "Cannot find metadata for object version."));
@@ -55,7 +60,7 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             throw new RpcException(new Status(StatusCode.Aborted, "Invalid eTags."));
         }
 
-        var objectDirectories = new ObjectDirectories(bucket.Name, objectToComplete);
+        var objectDirectories = new ObjectVersionDirectories(bucket.Name, objectToComplete);
         var objectVersionPath = new ObjectVersionPath(objectDirectories.ObjectVersionDirectory, objectToComplete.Extension);
         var absoluteObjectVersionPath = pathRetriever.GetAbsoluteDirectoryPath(objectVersionPath);
 
@@ -68,20 +73,21 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             await using var partStream = File.OpenRead(absolutePartPath);
             await partStream.CopyToAsync(finalFile, cancellationToken);
         }
-        
+
         List<Task> tasks =
         [
             objectByBucketIdRepository.UpdateUploadStatus(bucket.Id, uploadId, UploadStatus.Completed),
+            objectByFileKeyRepository.UpdateUploadStatus(bucket.Id, objectToComplete.FileKey, uploadId, UploadStatus.Completed),
             partByUploadIdRepository.Delete(bucket.Id, uploadId),
             bucketByIdRepository.IncrementObjectsCount(bucket.Id),
             bucketByIdRepository.IncrementSizeInBytesCount(bucket.Id, metadata.SizeInBytes),
-            divisionRepository.IncrementObjectsCount(bucket.Id, Enum.Parse<DivisionType.SizeType>(objectToComplete.DivisionSizeType), objectToComplete.DivisionId),
+            divisionRepository.IncrementObjectsCount(bucket.Id, Enum.Parse<DivisionType.SizeType>(objectToComplete.DivisionSizeType), objectToComplete.DivisionId)
         ];
-        
+
         var prefixes = FolderPrefixesRetriever.GetFolderPrefixes(bucket.Id, objectToComplete.FileKey, objectToComplete.Id);
 
         tasks.AddRange(prefixes.Select(folderPrefixByParentPrefixRepository.Create));
-        
+
         await Task.WhenAll(tasks);
 
         Directory.Delete(pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory), true);

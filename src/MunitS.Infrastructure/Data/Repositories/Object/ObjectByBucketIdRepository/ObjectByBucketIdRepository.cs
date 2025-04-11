@@ -6,6 +6,11 @@ public class ObjectByBucketIdRepository(CassandraConnector connector) : IObjectB
 {
     private readonly Table<ObjectByBucketId> _objects = new(connector.GetSession());
 
+    public async Task<List<ObjectByBucketId>> GetAll(Guid bucketId, IEnumerable<Guid> uploadIds)
+    {
+        return (await _objects.Where(o => o.BucketId == bucketId && uploadIds.Contains(o.UploadId)).ExecuteAsync()).ToList();
+    }
+    
     public async Task<ObjectByBucketId?> GetByUploadId(Guid bucketId, Guid uploadId)
     {
         return await _objects.FirstOrDefault(o => o.BucketId == bucketId && o.UploadId == uploadId).ExecuteAsync();
@@ -31,10 +36,5 @@ public class ObjectByBucketIdRepository(CassandraConnector connector) : IObjectB
     public async Task Create(ObjectByBucketId objectByBucketId)
     {
         await _objects.Insert(objectByBucketId).ExecuteAsync();
-    }
-
-    public async Task<List<ObjectByBucketId>> GetAll(Guid bucketId, string fileKey)
-    {
-        return (await _objects.Where(o => o.BucketId == bucketId && o.FileKey == fileKey).ExecuteAsync()).ToList();
     }
 }

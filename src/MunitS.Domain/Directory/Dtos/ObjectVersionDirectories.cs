@@ -1,12 +1,10 @@
-using MunitS.Domain.Directory;
 using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Object.ObjectByBucketId;
-namespace MunitS.UseCases.Processors.Service.PathRetriever.Dtos;
+namespace MunitS.Domain.Directory.Dtos;
 
-public class ObjectDirectories
+public class ObjectVersionDirectories
 {
-
-    public ObjectDirectories(string bucketName, ObjectByBucketId objectByBucketId)
+    public ObjectVersionDirectories(string bucketName, ObjectByBucketId objectByBucketId)
     {
         var divisionSizeType = Enum.Parse<DivisionType.SizeType>(objectByBucketId.DivisionSizeType);
 
@@ -16,8 +14,9 @@ public class ObjectDirectories
         ObjectVersionDirectory = new ObjectVersionDirectory(ObjectDirectory, objectByBucketId.UploadId);
         TempObjectVersionDirectory = new TempObjectVersionDirectory(ObjectVersionDirectory);
     }
+
     public BucketDirectory BucketDirectory { get; }
-    public DivisionDirectory DivisionDirectory { get; }
+    private DivisionDirectory DivisionDirectory { get; }
     public ObjectDirectory ObjectDirectory { get; }
     public ObjectVersionDirectory ObjectVersionDirectory { get; }
     public TempObjectVersionDirectory TempObjectVersionDirectory { get; }
