@@ -6,7 +6,8 @@ using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
-using MunitS.Infrastructure.Data.Repositories.Division;
+using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
+using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
 using MunitS.Infrastructure.Data.Repositories.FolderPrefix.FolderPrefixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
@@ -22,7 +23,8 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
     IPathRetriever pathRetriever,
     IMetadataByObjectIdRepository metadataByObjectIdRepository,
     IPartByUploadIdRepository partByUploadIdRepository,
-    IDivisionRepository divisionRepository,
+    IDivisionCounterRepository divisionCounterRepository,
+    IBucketCounterRepository bucketCounterRepository,
     IObjectByFileKeyRepository objectByFileKeyRepository,
     IFolderPrefixByParentPrefixRepository folderPrefixByParentPrefixRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
@@ -79,9 +81,9 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             objectByBucketIdRepository.UpdateUploadStatus(bucket.Id, uploadId, UploadStatus.Completed),
             objectByFileKeyRepository.UpdateUploadStatus(bucket.Id, objectToComplete.FileKey, uploadId, UploadStatus.Completed),
             partByUploadIdRepository.Delete(bucket.Id, uploadId),
-            bucketByIdRepository.IncrementObjectsCount(bucket.Id),
-            bucketByIdRepository.IncrementSizeInBytesCount(bucket.Id, metadata.SizeInBytes),
-            divisionRepository.IncrementObjectsCount(bucket.Id, Enum.Parse<DivisionType.SizeType>(objectToComplete.DivisionSizeType), objectToComplete.DivisionId)
+            bucketCounterRepository.IncrementObjectsCount(bucket.Id),
+            bucketCounterRepository.IncrementSizeInBytesCount(bucket.Id, metadata.SizeInBytes),
+            divisionCounterRepository.IncrementObjectsCount(bucket.Id, Enum.Parse<DivisionType.SizeType>(objectToComplete.DivisionSizeType), objectToComplete.DivisionId)
         ];
 
         var prefixes = FolderPrefixesRetriever.GetFolderPrefixes(bucket.Id, objectToComplete.FileKey, objectToComplete.Id);
