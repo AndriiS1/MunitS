@@ -1,6 +1,14 @@
 Tables population script:
 
 ```
+DROP TABLE IF EXISTS bucket_counters;
+CREATE TABLE bucket_counters (
+    id UUID,
+    objects_count COUNTER,
+    size_in_bytes COUNTER,
+    PRIMARY KEY ((id))
+);
+
 DROP TABLE IF EXISTS buckets_by_id;
 CREATE TABLE buckets_by_id (
     id UUID,
@@ -10,19 +18,20 @@ CREATE TABLE buckets_by_id (
     PRIMARY KEY ((id))
 );
 
-DROP TABLE IF EXISTS bucket_counters;
-CREATE TABLE bucket_counters (
-    id UUID,
-    objects_count COUNTER,
-    size_in_bytes COUNTER,
-    PRIMARY KEY ((id))
-);
-
 DROP TABLE IF EXISTS buckets_by_name;
 CREATE TABLE buckets_by_name (
     name TEXT,
     id UUID,
     PRIMARY KEY ((name))
+);
+
+DROP TABLE IF EXISTS division_counters;
+CREATE TABLE division_counters (
+    bucket_id UUID,
+    type TEXT,
+    id UUID,
+    objects_count COUNTER,
+    PRIMARY KEY ((bucket_id, type), id)
 );
 
 DROP TABLE IF EXISTS divisions_by_bucket_id;
@@ -35,20 +44,30 @@ CREATE TABLE divisions_by_bucket_id (
     PRIMARY KEY ((bucket_id, type), id)
 );
 
-DROP TABLE IF EXISTS division_counters;
-CREATE TABLE division_counters (
+DROP TABLE IF EXISTS folder_prefixes_by_parent_prefix;
+CREATE TABLE folder_prefixes_by_parent_prefix (
     bucket_id UUID,
-    type TEXT,
-    id UUID,
-    objects_count COUNTER,
-    PRIMARY KEY ((bucket_id, type), id)
+    parent_prefix TEXT,
+    prefix TEXT,
+    PRIMARY KEY ((bucket_id), parent_prefix)
+);
+
+DROP TABLE IF EXISTS metadata_by_object_id;
+CREATE TABLE metadata_by_object_id (
+    bucket_id UUID,
+    upload_id UUID,
+    object_id UUID,
+    mime_type TEXT,
+    size_in_bytes BIGINT,
+    custom_metadata MAP<TEXT, TEXT>,
+    tags MAP<TEXT, TEXT>,
+    PRIMARY KEY ((bucket_id), upload_id)
 );
 
 DROP TABLE IF EXISTS objects_by_bucket_id;
 CREATE TABLE objects_by_bucket_id (
     id UUID,
     bucket_id UUID,
-    version_id UUID,
     upload_id UUID,
     division_id UUID,
     file_key TEXT,
@@ -81,26 +100,6 @@ CREATE TABLE objects_by_parent_prefix (
     upload_id UUID,
     initiated_at TIMESTAMP,
     PRIMARY KEY ((bucket_id), parent_prefix, file_name)
-);
-
-DROP TABLE IF EXISTS folder_prefixes_by_parent_prefix;
-CREATE TABLE folder_prefixes_by_parent_prefix (
-    bucket_id UUID,
-    parent_prefix TEXT,
-    prefix TEXT,
-    PRIMARY KEY ((bucket_id), parent_prefix)
-);
-
-DROP TABLE IF EXISTS metadata_by_object_id;
-CREATE TABLE metadata_by_object_id (
-    bucket_id UUID,
-    upload_id UUID,
-    object_id UUID,
-    mime_type TEXT,
-    size_in_bytes BIGINT,
-    custom_metadata MAP<TEXT, TEXT>,
-    tags MAP<TEXT, TEXT>,
-    PRIMARY KEY ((bucket_id), upload_id)
 );
 
 DROP TABLE IF EXISTS parts_by_upload_id;
