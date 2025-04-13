@@ -11,12 +11,12 @@ public static class FolderPrefixesRetriever
 
         List<FolderPrefixByParentPrefix> result = [];
 
-        var prefix = "/";
+        var parentPrefix = "/";
 
         foreach (var folder in folders)
         {
-            result.Add(FolderPrefixByParentPrefix.Create(bucketId, folder, prefix));
-            prefix = Path.Combine(prefix, folder + "/");
+            result.Add(FolderPrefixByParentPrefix.Create(bucketId, parentPrefix, folder));
+            parentPrefix = Path.Combine(parentPrefix, folder + "/");
         }
 
         return result;

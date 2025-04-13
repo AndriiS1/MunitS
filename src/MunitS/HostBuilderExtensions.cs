@@ -9,9 +9,9 @@ public static class HostBuilderExtensions
             options.AddDefaultPolicy(
                 policy =>
                 {
-                    policy.WithOrigins()
-                        .WithMethods(HttpMethods.Put)
-                        .AllowAnyHeader();
+                    policy.WithMethods(HttpMethods.Put)
+                        .AllowAnyHeader()
+                        .AllowAnyOrigin();
                 });
         });
     }
