@@ -11,6 +11,11 @@ public class BucketCounterRepository(CassandraConnector connector) : IBucketCoun
         return (await _bucketCounters.Where(d => d.Id == bucketId).ExecuteAsync()).FirstOrDefault();
     }
 
+    public async Task<List<Domain.Bucket.BucketCounter.BucketCounter>> GetAll(IEnumerable<Guid> bucketIds)
+    {
+        return (await _bucketCounters.Where(d => bucketIds.Contains(d.Id)).ExecuteAsync()).ToList();
+    }
+
     public async Task IncrementObjectsCount(Guid bucketId, long increment = 1)
     {
         const string cql = $"UPDATE {BucketCountersMapping.TableName} "

@@ -35,16 +35,7 @@ message GetBucketRequest {
 
 message GetBucketResponse {
   string status = 1;
-  ExtendedBucketResponse content = 2;
-}
-
-message ExtendedBucketResponse {
-  string id = 1;
-  string name = 2;
-  bool versioningEnabled = 3;
-  int32 versionsLimit = 4;
-  int64 size = 5;
-  int64 objectsCount = 6;
+  BucketResponse content = 2;
 }
 
 message BucketResponse {
@@ -52,6 +43,12 @@ message BucketResponse {
   string name = 2;
   bool versioningEnabled = 3;
   int32 versionsLimit = 4;
+  BucketCountersResponse counter = 5;
+}
+
+message BucketCountersResponse {
+  int64 size = 1;
+  int64 objectsCount = 2;
 }
 
 // Get buckets
