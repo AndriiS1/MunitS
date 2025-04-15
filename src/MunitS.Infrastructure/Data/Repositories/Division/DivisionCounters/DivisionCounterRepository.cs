@@ -9,7 +9,7 @@ public class DivisionCounterRepository(CassandraConnector connector) : IDivision
 
     public async Task<List<DivisionCounter>> GetAll(Guid bucketId, DivisionType.SizeType type)
     {
-        return (await _divisions.Where(d => d.BucketId == bucketId && d.Type == type.ToString())
+        return (await _divisions.Where(d => d.BucketId == bucketId && d.Type == type)
             .ExecuteAsync()).ToList();
     }
 

@@ -1,4 +1,4 @@
-using MunitS.Domain.FolderPrefixes.FolderPrefixByParentPrefix;
+using MunitS.Domain.Prefix.PrefixByParentPrefix;
 namespace MunitS.UseCases.Processors.Service.ForlderPrefixesRetriever;
 
 public static class FolderPrefixesRetriever

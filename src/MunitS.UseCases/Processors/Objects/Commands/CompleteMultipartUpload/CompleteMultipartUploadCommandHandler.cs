@@ -50,7 +50,7 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             throw new RpcException(new Status(StatusCode.NotFound, "Cannot find metadata for object version."));
         }
 
-        if (Enum.Parse<UploadStatus>(objectToComplete.UploadStatus) == UploadStatus.Completed)
+        if (objectToComplete.UploadStatus == UploadStatus.Completed)
         {
             throw new RpcException(new Status(StatusCode.Aborted, "Object upload is already completed."));
         }
@@ -83,7 +83,7 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             partByUploadIdRepository.Delete(bucket.Id, uploadId),
             bucketCounterRepository.IncrementObjectsCount(bucket.Id),
             bucketCounterRepository.IncrementSizeInBytesCount(bucket.Id, metadata.SizeInBytes),
-            divisionCounterRepository.IncrementObjectsCount(bucket.Id, Enum.Parse<DivisionType.SizeType>(objectToComplete.DivisionSizeType), objectToComplete.DivisionId)
+            divisionCounterRepository.IncrementObjectsCount(bucket.Id, objectToComplete.DivisionSizeType, objectToComplete.DivisionId)
         ];
 
         var prefixes = FolderPrefixesRetriever.GetFolderPrefixes(bucket.Id, objectToComplete.FileKey, objectToComplete.Id);

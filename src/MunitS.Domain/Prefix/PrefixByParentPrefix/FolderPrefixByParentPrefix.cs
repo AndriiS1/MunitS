@@ -1,4 +1,4 @@
-namespace MunitS.Domain.FolderPrefixes.FolderPrefixByParentPrefix;
+namespace MunitS.Domain.Prefix.PrefixByParentPrefix;
 
 public class FolderPrefixByParentPrefix
 {

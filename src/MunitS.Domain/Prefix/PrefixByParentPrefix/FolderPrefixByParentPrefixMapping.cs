@@ -1,5 +1,5 @@
 using Cassandra.Mapping;
-namespace MunitS.Domain.FolderPrefixes.FolderPrefixByParentPrefix;
+namespace MunitS.Domain.Prefix.PrefixByParentPrefix;
 
 public class FolderPrefixByParentPrefixMapping : Mappings
 {
@@ -7,7 +7,7 @@ public class FolderPrefixByParentPrefixMapping : Mappings
 
     public FolderPrefixByParentPrefixMapping()
     {
-        For<FolderPrefixByParentPrefix>()
+        For<Prefix.PrefixByParentPrefix.FolderPrefixByParentPrefix>()
             .TableName(TableName)
             .PartitionKey(c => c.BucketId)
             .Column(c => c.BucketId, cm => cm.WithName("bucket_id"))

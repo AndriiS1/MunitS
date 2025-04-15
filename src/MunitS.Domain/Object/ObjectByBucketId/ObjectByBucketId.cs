@@ -9,10 +9,10 @@ public class ObjectByBucketId
     public required Guid DivisionId { get; init; }
     public required string FileKey { get; init; }
     public required string FileName { get; init; }
-    public required string DivisionSizeType { get; init; }
+    public required DivisionType.SizeType DivisionSizeType { get; init; }
     public DateTimeOffset? UploadedAt { get; init; }
     public required DateTimeOffset InitiatedAt { get; init; }
-    public required string UploadStatus { get; init; }
+    public required UploadStatus UploadStatus { get; init; }
     public required string Extension { get; init; }
 
     public static ObjectByBucketId Create(Guid bucketId, Guid divisionId, string fileKey, string fileName,
@@ -27,8 +27,8 @@ public class ObjectByBucketId
             DivisionId = divisionId,
             InitiatedAt = initiatedAt,
             UploadId = Guid.NewGuid(),
-            DivisionSizeType = divisionSizeType.ToString(),
-            UploadStatus = Object.ObjectByBucketId.UploadStatus.Instantiated.ToString(),
+            DivisionSizeType = divisionSizeType,
+            UploadStatus = Object.ObjectByBucketId.UploadStatus.Instantiated,
             Extension = extension
         };
     }

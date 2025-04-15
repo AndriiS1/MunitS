@@ -53,7 +53,7 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
         if (division == null)
         {
             division = DivisionByBucketId.Create(bucket.Id, bucket.Name, divisionType);
-            var divisionDirectory = new DivisionDirectory(bucket.Name, division.Id, division.GetSizeType());
+            var divisionDirectory = new DivisionDirectory(bucket.Name, division.Id, division.Type);
 
             var absoluteDivisionDirectory = pathRetriever.GetAbsoluteDirectoryPath(divisionDirectory);
             Directory.CreateDirectory(absoluteDivisionDirectory);
@@ -65,7 +65,7 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
 
         var fileName = FileKeyRule.GetFileName(command.Request.FileKey);
         var initiatedAt = DateTimeOffset.UtcNow;
-        var divisionSizeType = Enum.Parse<DivisionType.SizeType>(division.Type);
+        var divisionSizeType = division.Type;
 
         var objectByBucketId = ObjectByBucketId.Create(bucket.Id, division.Id, command.Request.FileKey,
             fileName, initiatedAt, divisionSizeType, FileKeyRule.GetExtension(command.Request.FileKey));

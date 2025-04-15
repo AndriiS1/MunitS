@@ -6,10 +6,8 @@ public class ObjectVersionDirectories
 {
     public ObjectVersionDirectories(string bucketName, ObjectByBucketId objectByBucketId)
     {
-        var divisionSizeType = Enum.Parse<DivisionType.SizeType>(objectByBucketId.DivisionSizeType);
-
         BucketDirectory = new BucketDirectory(bucketName);
-        DivisionDirectory = new DivisionDirectory(bucketName, objectByBucketId.DivisionId, divisionSizeType);
+        DivisionDirectory = new DivisionDirectory(bucketName, objectByBucketId.DivisionId, objectByBucketId.DivisionSizeType);
         ObjectDirectory = new ObjectDirectory(DivisionDirectory, objectByBucketId.Id);
         ObjectVersionDirectory = new ObjectVersionDirectory(ObjectDirectory, objectByBucketId.UploadId);
         TempObjectVersionDirectory = new TempObjectVersionDirectory(ObjectVersionDirectory);

@@ -13,7 +13,7 @@ public class DivisionByIdRepository(CassandraConnector connector) : IDivisionByI
 
     public async Task<List<DivisionByBucketId>> GetAll(Guid bucketId, DivisionType.SizeType type)
     {
-        return (await _divisions.Where(d => d.BucketId == bucketId && d.Type == type.ToString())
+        return (await _divisions.Where(d => d.BucketId == bucketId && d.Type == type)
             .ExecuteAsync()).ToList();
     }
 }

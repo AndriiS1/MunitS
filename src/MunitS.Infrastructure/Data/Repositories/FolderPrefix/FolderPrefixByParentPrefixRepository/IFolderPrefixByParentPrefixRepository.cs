@@ -1,4 +1,4 @@
-using MunitS.Domain.FolderPrefixes.FolderPrefixByParentPrefix;
+using MunitS.Domain.Prefix.PrefixByParentPrefix;
 namespace MunitS.Infrastructure.Data.Repositories.FolderPrefix.FolderPrefixByParentPrefixRepository;
 
 public interface IFolderPrefixByParentPrefixRepository

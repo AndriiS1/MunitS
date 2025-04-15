@@ -1,5 +1,5 @@
-using MunitS.Domain.FolderPrefixes.FolderPrefixByParentPrefix;
 using MunitS.Domain.Object.ObjectByParentPrefix;
+using MunitS.Domain.Prefix.PrefixByParentPrefix;
 using MunitS.Protos;
 namespace MunitS.UseCases.Processors.Objects.Mappers;
 
