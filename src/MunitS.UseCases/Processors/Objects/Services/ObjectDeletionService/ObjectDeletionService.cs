@@ -16,9 +16,9 @@ public class ObjectDeletionService(IBucketCounterRepository bucketCounterReposit
     IObjectByFileKeyRepository objectByFileKeyRepository,
     IPartByUploadIdRepository partByUploadIdRepository,
     IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository,
-    IPathRetriever pathRetriever)
+    IPathRetriever pathRetriever) : IObjectDeletionService
 {
-    public async Task DeleteObject(string bucketName, ObjectByUploadId objectByUploadId, bool deleteEntireObject = true)
+    public async Task DeleteOldestObjectVersion(string bucketName, ObjectByUploadId objectByUploadId)
     {
         await bucketCounterRepository.IncrementObjectsCount(objectByUploadId.BucketId, -1);
         await bucketCounterRepository.IncrementSizeInBytesCount(objectByUploadId.BucketId, objectByUploadId.SizeInBytes);
@@ -31,20 +31,10 @@ public class ObjectDeletionService(IBucketCounterRepository bucketCounterReposit
 
         await partByUploadIdRepository.Delete(objectByUploadId.BucketId, objectByUploadId.UploadId);
 
-        await DeleteObjectPrefixesRelations(objectByUploadId.BucketId, objectByUploadId.FileKey);
-
         var objectDirectories = new ObjectVersionDirectories(bucketName, objectByUploadId);
 
-        if (deleteEntireObject)
-        {
-            var absoluteObjectPath = pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.ObjectDirectory);
-            Directory.Delete(absoluteObjectPath, true);
-        }
-        else
-        {
-            var absoluteObjectVersionPath = pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.ObjectVersionDirectory);
-            Directory.Delete(absoluteObjectVersionPath);
-        }
+        var absoluteObjectVersionPath = pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.ObjectVersionDirectory);
+        Directory.Delete(absoluteObjectVersionPath, true);
     }
 
     private async Task DeleteObjectPrefixesRelations(Guid bucketId, string fileKey)

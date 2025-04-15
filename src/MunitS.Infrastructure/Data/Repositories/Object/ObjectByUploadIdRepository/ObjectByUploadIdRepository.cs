@@ -19,7 +19,7 @@ public class ObjectByUploadIdRepository(CassandraConnector connector) : IObjectB
     public async Task UpdateUploadStatus(Guid bucketId, Guid objectId, Guid uploadId, UploadStatus status)
     {
         await _objects
-            .Where(o => o.BucketId == bucketId && o.UploadId == uploadId)
+            .Where(o => o.BucketId == bucketId && o.Id == objectId && o.UploadId == uploadId)
             .Select(u => new
             {
                 UploadStatus = status.ToString()
@@ -35,7 +35,7 @@ public class ObjectByUploadIdRepository(CassandraConnector connector) : IObjectB
 
     public async Task Delete(Guid bucketId, Guid objectId, Guid uploadId)
     {
-        await _objects.Where(o => o.UploadId == uploadId && o.BucketId == bucketId).Delete().ExecuteAsync();
+        await _objects.Where(o => o.UploadId == uploadId && o.Id == objectId && o.BucketId == bucketId).Delete().ExecuteAsync();
     }
 
     public async Task Create(ObjectByUploadId objectByUploadId)

@@ -12,6 +12,7 @@ using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
+using MunitS.UseCases.Processors.Objects.Services.ObjectDeletionService;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
 
@@ -21,6 +22,7 @@ public class CompleteMultipartUploadCommandHandler(IObjectByUploadIdRepository o
     IPartByUploadIdRepository partByUploadIdRepository,
     IDivisionCounterRepository divisionCounterRepository,
     IBucketCounterRepository bucketCounterRepository,
+    IObjectDeletionService objectDeletionService,
     IObjectByFileKeyRepository objectByFileKeyRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CompleteMultipartUploadCommand command, CancellationToken cancellationToken)
@@ -78,15 +80,30 @@ public class CompleteMultipartUploadCommandHandler(IObjectByUploadIdRepository o
 
         Directory.Delete(pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory), true);
 
-        var objectVersions = await objectByFileKeyRepository.GetAll(bucket.Id, objectToComplete.FileKey);
+        var objectVersions = (await objectByUploadIdRepository.GetAll(bucket.Id, objectToComplete.Id))
+            .Where(o => o.UploadId != objectToComplete.UploadId)
+            .ToList();
+
+        if (objectVersions.Count == 0)
+        {
+            return new ObjectServiceStatusResponse
+            {
+                Status = "Success"
+            };
+        }
+
+        var oldestObject = objectVersions.OrderByDescending(v => v.UploadedAt).First();
 
         if (bucket.VersioningEnabled)
         {
-            if (objectVersions.Count > bucket.VersionsLimit)
+            if (objectVersions.Count >= bucket.VersionsLimit)
             {
-                var oldestObject = objectVersions.OrderByDescending(v => v.UploadedAt).First();
-
+                await objectDeletionService.DeleteOldestObjectVersion(bucket.Name, oldestObject);
             }
+        }
+        else
+        {
+            await objectDeletionService.DeleteOldestObjectVersion(bucket.Name, oldestObject);
         }
 
         return new ObjectServiceStatusResponse
