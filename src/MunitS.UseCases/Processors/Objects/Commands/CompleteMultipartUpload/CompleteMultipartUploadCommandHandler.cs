@@ -8,7 +8,6 @@ using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
@@ -22,8 +21,7 @@ public class CompleteMultipartUploadCommandHandler(IObjectByUploadIdRepository o
     IPartByUploadIdRepository partByUploadIdRepository,
     IDivisionCounterRepository divisionCounterRepository,
     IBucketCounterRepository bucketCounterRepository,
-    IObjectDeletionService objectDeletionService,
-    IObjectByFileKeyRepository objectByFileKeyRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
+    IObjectDeletionService objectDeletionService) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CompleteMultipartUploadCommand command, CancellationToken cancellationToken)
     {

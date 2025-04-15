@@ -110,8 +110,18 @@ message GetObjectRequest {
 
 message GetObjectResponse {
   string id = 1;
-  string suffix = 2;
-  string createdAt = 3;
-  string type = 4;
-  string mimeType = 5;
+  string fileKey = 2;
+  string fileName = 3;
+  string createdAt = 4;
+  repeated ObjectVersionResponse Versions = 5;
+}
+
+message ObjectVersionResponse {
+  string uploadId = 1;
+  string uploadStatus = 2;
+  map<string, string> CustomMetadata = 3;
+  string initiatedAt = 4;
+  int64 sizeInBytes = 5;
+  string mimeType = 6;
+  map<string, string> Tags = 7;
 }
