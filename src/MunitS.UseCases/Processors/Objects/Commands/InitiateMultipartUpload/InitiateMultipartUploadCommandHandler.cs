@@ -38,7 +38,7 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
 
         var objects = await objectByFileKeyRepository.GetAll(bucket.Id, command.Request.FileKey);
 
-        if (objects.Any(o => o.UploadStatus == UploadStatus.Instantiated))
+        if (objects.Any(o => o.UploadStatus == UploadStatus.Instantiated.ToString()))
         {
             throw new RpcException(new Status(StatusCode.NotFound, "Object upload is already instantiated."));
         }
@@ -54,8 +54,8 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
 
         if (division == null)
         {
-            division = DivisionByBucketId.Create(bucket.Id, bucket.Name, divisionType);
-            var divisionDirectory = new DivisionDirectory(bucket.Name, division.Id, division.Type);
+            division = DivisionByBucketId.Create(bucket.Id, divisionType);
+            var divisionDirectory = new DivisionDirectory(bucket.Name, division.Id, Enum.Parse<DivisionType.SizeType>(division.Type));
 
             var absoluteDivisionDirectory = pathRetriever.GetAbsoluteDirectoryPath(divisionDirectory);
             Directory.CreateDirectory(absoluteDivisionDirectory);
@@ -67,7 +67,7 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
 
         var fileName = FileKeyRule.GetFileName(command.Request.FileKey);
         var initiatedAt = DateTimeOffset.UtcNow;
-        var divisionSizeType = division.Type;
+        var divisionSizeType = Enum.Parse<DivisionType.SizeType>(division.Type);
 
         var objectByBucketId = ObjectByBucketId.Create(bucket.Id, division.Id, command.Request.FileKey,
             fileName, initiatedAt, divisionSizeType, FileKeyRule.GetExtension(command.Request.FileKey));

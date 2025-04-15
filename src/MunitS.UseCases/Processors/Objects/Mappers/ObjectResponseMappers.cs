@@ -11,8 +11,8 @@ public static class ObjectResponseMappers
         {
             Id = @object.Id.ToString(),
            Suffix = @object.Suffix,
-           Type = @object.Type.ToString(),
-           MimeType = @object.MimeType,
+           Type = @object.Type,
+           MimeType = @object.MimeType ?? "-",
            CreatedAt = @object.CreatedAt.ToString(),
         };
     }
@@ -31,7 +31,7 @@ public static class ObjectResponseMappers
             response.NextCursor = new ObjectSuffixesCursor
             {
                 Suffix = page.NextCursor.Suffix,
-                Type = page.NextCursor.Type.ToString(),
+                Type = page.NextCursor?.Type.ToString(),
             };
         }
         

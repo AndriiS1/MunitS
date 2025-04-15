@@ -6,7 +6,7 @@ public class ObjectSuffixByParentPrefix
     public required Guid BucketId { get; init; }
     public required string ParentPrefix { get; init; }
     public required string Suffix { get; init; }
-    public required PrefixType Type { get; init; }
+    public required string Type { get; init; }
     public string? MimeType { get; private init; }
     public DateTimeOffset CreatedAt { get; private init; }
 
@@ -19,7 +19,7 @@ public class ObjectSuffixByParentPrefix
             BucketId = bucketId,
             ParentPrefix = parentPrefix,
             Suffix = prefix,
-            Type = prefixType,
+            Type = prefixType.ToString(),
             MimeType = mimeType,
             CreatedAt = DateTimeOffset.UtcNow
         };

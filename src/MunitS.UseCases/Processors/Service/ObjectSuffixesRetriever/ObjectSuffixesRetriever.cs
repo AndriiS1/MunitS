@@ -5,7 +5,8 @@ public static class ObjectSuffixesRetriever
 {
     public static List<ObjectSuffixByParentPrefix> GetFolderPrefixes(Guid bucketId, string fileKey, Guid objectId)
     {
-        var split = fileKey.Split("/");
+        var trimmedFileKey =  fileKey.Trim('/');
+        var split = trimmedFileKey.Split("/");
         var folders = split[new Range(0, split.Length - 1)];
         var fileName = split[^1];
 
@@ -19,7 +20,7 @@ public static class ObjectSuffixesRetriever
             parentPrefix = Path.Combine(parentPrefix, folder + "/");
         }
 
-        var objectParentPrefix = folderPrefixes.Count > 0 ? folderPrefixes.Last().Suffix : "/";
+        var objectParentPrefix = folderPrefixes.Count > 0 ? folderPrefixes.Last().ParentPrefix + folderPrefixes.Last().Suffix + "/" : "/";
 
         var objectPrefix = ObjectSuffixByParentPrefix.Create(bucketId, objectId, objectParentPrefix, fileName, PrefixType.Object);
         folderPrefixes.Add(objectPrefix);

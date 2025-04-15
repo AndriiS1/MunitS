@@ -17,7 +17,7 @@ public class ObjectSuffixByParentPrefixRepository(CassandraConnector connector) 
         {
             query = query
                 .Where(b => b.Type.CompareTo(cursor.Type) > 0 ||
-                            (b.Type == cursor.Type && b.Suffix.CompareTo(cursor.Suffix) > 0));
+                            (b.Type == cursor.Type.ToString() && b.Suffix.CompareTo(cursor.Suffix) > 0));
         }
 
         var results = (await query
@@ -39,7 +39,7 @@ public class ObjectSuffixByParentPrefixRepository(CassandraConnector connector) 
             Data = results,
             HasNext = hasMore,
             NextCursor = hasMore && lastItem != null
-                ? new ObjectSuffixesPage.ObjectSuffixesPageCursor(lastItem.Type, lastItem.Suffix)
+                ? new ObjectSuffixesPage.ObjectSuffixesPageCursor(Enum.Parse<PrefixType>(lastItem.Type), lastItem.Suffix)
                 : null
         };
     }

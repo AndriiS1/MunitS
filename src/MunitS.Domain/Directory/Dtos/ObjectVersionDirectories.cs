@@ -7,7 +7,7 @@ public class ObjectVersionDirectories
     public ObjectVersionDirectories(string bucketName, ObjectByBucketId objectByBucketId)
     {
         BucketDirectory = new BucketDirectory(bucketName);
-        DivisionDirectory = new DivisionDirectory(bucketName, objectByBucketId.DivisionId, objectByBucketId.DivisionSizeType);
+        DivisionDirectory = new DivisionDirectory(bucketName, objectByBucketId.DivisionId, Enum.Parse<DivisionType.SizeType>(objectByBucketId.DivisionSizeType));
         ObjectDirectory = new ObjectDirectory(DivisionDirectory, objectByBucketId.Id);
         ObjectVersionDirectory = new ObjectVersionDirectory(ObjectDirectory, objectByBucketId.UploadId);
         TempObjectVersionDirectory = new TempObjectVersionDirectory(ObjectVersionDirectory);

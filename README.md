@@ -28,7 +28,7 @@ CREATE TABLE buckets_by_name (
 DROP TABLE IF EXISTS division_counters;
 CREATE TABLE division_counters (
     bucket_id UUID,
-    type INT,
+    type TEXT,
     id UUID,
     objects_count COUNTER,
     PRIMARY KEY ((bucket_id, type), id)
@@ -37,7 +37,7 @@ CREATE TABLE division_counters (
 DROP TABLE IF EXISTS divisions_by_bucket_id;
 CREATE TABLE divisions_by_bucket_id (
     bucket_id UUID,
-    type INT,
+    type TEXT,
     name TEXT,
     id UUID,
     objects_limit BIGINT,
@@ -52,7 +52,7 @@ CREATE TABLE object_suffixes_by_parent_prefix (
     suffix TEXT,
     mime_type TEXT,
     created_at TIMESTAMP,
-    type INT,
+    type TEXT,
     PRIMARY KEY ((bucket_id), parent_prefix, type, suffix)
 );
 
@@ -79,7 +79,7 @@ CREATE TABLE objects_by_bucket_id (
     division_size_type TEXT,
     uploaded_at TIMESTAMP,
     initiated_at TIMESTAMP,
-    upload_status INT,
+    upload_status TEXT,
     extension TEXT,
     PRIMARY KEY ((bucket_id), upload_id)
 );
@@ -90,7 +90,7 @@ CREATE TABLE objects_by_file_key (
     bucket_id UUID,
     upload_id UUID,
     file_key TEXT,
-    upload_status INT,
+    upload_status TEXT,
     PRIMARY KEY ((bucket_id), file_key, upload_id)
 );
 
