@@ -33,7 +33,7 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
         var bucket = await bucketByIdRepository.Get(Guid.Parse(command.Request.BucketId));
 
         if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {command.Request.BucketId} is not found."));
-        
+
         var divisionType = new DivisionType(command.Request.SizeInBytes);
 
         var bucketDivisions = await divisionByIdRepository.GetAll(bucket.Id, divisionType.Type);
@@ -55,8 +55,8 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
                 .ToInsert(division)
                 .Build();
         }
-        
-        var tryGetObjectWithFileKey = await objectByFileKeyRepository.Any(bucket.Id, command.Request.FileKey);
+
+        var tryGetObjectWithFileKey = await objectByFileKeyRepository.Get(bucket.Id, command.Request.FileKey);
 
         var objectId = tryGetObjectWithFileKey?.Id ?? Guid.NewGuid();
 
@@ -66,7 +66,7 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
 
         var objectByBucketId = ObjectByUploadId.Create(bucket.Id, division.Id, objectId, command.Request.FileKey,
             fileName, initiatedAt, divisionSizeType, FileKeyRule.GetExtension(command.Request.FileKey), command.Request.MimeType, command.Request.SizeInBytes);
-        var objectByFileKey = ObjectByFileKey.Create(bucket.Id, objectId, objectByBucketId.UploadId, command.Request.FileKey);
+        var objectByFileKey = ObjectByFileKey.Create(bucket.Id, objectId, command.Request.FileKey);
 
         var objectDirectories = new ObjectVersionDirectories(bucket.Name, objectByBucketId);
 

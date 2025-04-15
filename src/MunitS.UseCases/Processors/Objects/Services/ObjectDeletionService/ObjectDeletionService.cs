@@ -3,7 +3,6 @@ using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Object.ObjectByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
@@ -13,7 +12,6 @@ namespace MunitS.UseCases.Processors.Objects.Services.ObjectDeletionService;
 public class ObjectDeletionService(IBucketCounterRepository bucketCounterRepository,
     IDivisionCounterRepository divisionCounterRepository,
     IObjectByUploadIdRepository objectByUploadIdRepository,
-    IObjectByFileKeyRepository objectByFileKeyRepository,
     IPartByUploadIdRepository partByUploadIdRepository,
     IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository,
     IPathRetriever pathRetriever) : IObjectDeletionService
@@ -27,7 +25,6 @@ public class ObjectDeletionService(IBucketCounterRepository bucketCounterReposit
             Enum.Parse<DivisionType.SizeType>(objectByUploadId.DivisionSizeType), objectByUploadId.BucketId, -1);
 
         await objectByUploadIdRepository.Delete(objectByUploadId.BucketId, objectByUploadId.UploadId);
-        await objectByFileKeyRepository.Delete(objectByUploadId.BucketId, objectByUploadId.FileKey, objectByUploadId.UploadId);
 
         await partByUploadIdRepository.Delete(objectByUploadId.BucketId, objectByUploadId.UploadId);
 

@@ -69,7 +69,6 @@ public class CompleteMultipartUploadCommandHandler(IObjectByUploadIdRepository o
         List<Task> tasks =
         [
             objectByUploadIdRepository.UpdateUploadStatus(bucket.Id, Guid.Parse(command.Request.ObjectId), uploadId, UploadStatus.Completed),
-            objectByFileKeyRepository.UpdateUploadStatus(bucket.Id, objectToComplete.FileKey, uploadId, UploadStatus.Completed),
             partByUploadIdRepository.Delete(bucket.Id, uploadId),
             bucketCounterRepository.IncrementObjectsCount(bucket.Id),
             bucketCounterRepository.IncrementSizeInBytesCount(bucket.Id, objectToComplete.SizeInBytes),

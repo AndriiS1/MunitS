@@ -11,6 +11,7 @@ service ObjectsService {
   rpc CompleteMultipartUpload(CompleteMultipartUploadRequest) returns (ObjectServiceStatusResponse);
   
   rpc DeleteObject(DeleteObjectRequest) returns (ObjectServiceStatusResponse);
+  rpc GetObject(GetObjectRequest) returns (GetObjectResponse);
   rpc GetObjectsByPrefix(GetObjectByPrefixRequest) returns (GetObjectsSuffixesResponse);
 }
 
@@ -93,6 +94,21 @@ message ObjectSuffixesResponse {
 }
 
 message ObjectSuffixResponse {
+  string id = 1;
+  string suffix = 2;
+  string createdAt = 3;
+  string type = 4;
+  string mimeType = 5;
+}
+
+// get object response
+
+message GetObjectRequest {
+  string bucketId = 1;
+  string fileKey = 2;
+}
+
+message GetObjectResponse {
   string id = 1;
   string suffix = 2;
   string createdAt = 3;

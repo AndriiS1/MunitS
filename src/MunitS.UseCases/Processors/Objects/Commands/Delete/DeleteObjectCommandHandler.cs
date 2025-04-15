@@ -24,12 +24,12 @@ public class DeleteObjectCommandHandler(IObjectsBuilder objectsBuilder,
 
         if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {command.Request.BucketId} is not found."));
 
-        var objects = await objectByFileKeyRepository.GetAll(bucket.Id, command.Request.FileKey);
-
-        if (objects.Count == 0)
-        {
-            throw new RpcException(new Status(StatusCode.NotFound, "No object versions found."));
-        }
+        // var objects = await objectByFileKeyRepository.GetAll(bucket.Id, command.Request.FileKey);
+        //
+        // if (objects.Count == 0)
+        // {
+        //     throw new RpcException(new Status(StatusCode.NotFound, "No object versions found."));
+        // }
 
         // var objectVersions = await objectByUploadIdRepository.GetAll(bucket.Id, objects.Select(o => o.UploadId));
 

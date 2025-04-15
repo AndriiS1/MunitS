@@ -10,18 +10,11 @@ public class ObjectsBuilder(IObjectByUploadIdRepository objectByUploadIdReposito
     private readonly List<DeleteObjectByBucketId> _objectByBucketIdsToDelete = [];
     private readonly List<ObjectByUploadId> _objectByBucketIdsToInsert = [];
 
-    private readonly List<DeleteObjectByFileKey> _objectByFileKeysToDelete = [];
     private readonly List<ObjectByFileKey> _objectByFileKeysToInsert = [];
 
     public ObjectsBuilder ToDelete(DeleteObjectByBucketId payload)
     {
         _objectByBucketIdsToDelete.Add(payload);
-        return this;
-    }
-
-    public ObjectsBuilder ToDelete(DeleteObjectByFileKey payload)
-    {
-        _objectByFileKeysToDelete.Add(payload);
         return this;
     }
 
@@ -42,15 +35,11 @@ public class ObjectsBuilder(IObjectByUploadIdRepository objectByUploadIdReposito
         var insertTasks = _objectByBucketIdsToInsert.Select(objectByUploadIdRepository.Create).ToList()
             .Concat(_objectByFileKeysToInsert.Select(objectByFileKeyRepository.Create));
 
-        var deleteTasks = _objectByBucketIdsToDelete.Select(o => objectByUploadIdRepository.Delete(o.BucketId, o.UploadId))
-            .Concat(_objectByFileKeysToDelete.Select(o => objectByFileKeyRepository.Delete(o.BucketId, o.FileKey, o.UploadId)));
+        var deleteTasks = _objectByBucketIdsToDelete
+            .Select(o => objectByUploadIdRepository.Delete(o.BucketId, o.UploadId));
 
         await Task.WhenAll(insertTasks.Concat(deleteTasks));
     }
 
     public sealed record DeleteObjectByBucketId(Guid BucketId, Guid UploadId);
-
-    public sealed record DeleteObjectByFileKey(Guid BucketId, string FileKey, Guid UploadId);
-
-    public sealed record DeleteObjectByParentPrefix(Guid BucketId, string FileName, string ParentPrefix);
 }

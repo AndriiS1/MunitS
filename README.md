@@ -80,11 +80,9 @@ DROP TABLE IF EXISTS objects_by_file_key;
 CREATE TABLE objects_by_file_key (
     id UUID,
     bucket_id UUID,
-    upload_id UUID,
     file_key TEXT,
-    upload_status TEXT,
-    uploaded_at TIMESTAMP,
-    PRIMARY KEY ((bucket_id), file_key, upload_id)
+    created_at TIMESTAMP,
+    PRIMARY KEY ((bucket_id), file_key)
 );
 
 DROP TABLE IF EXISTS parts_by_upload_id;

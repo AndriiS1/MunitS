@@ -1,6 +1,5 @@
 using Grpc.Core;
 using MediatR;
-using MunitS.Domain.Directory.Dtos;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
@@ -31,18 +30,18 @@ public class AbortMultipartUploadCommandHandler(IObjectByUploadIdRepository obje
             throw new RpcException(new Status(StatusCode.NotFound, "There is no instantiated object."));
         }
 
-        var objects = (await objectByFileKeyRepository.GetAll(bucket.Id, objectToAbort.FileKey)).Where(o => o.UploadId != objectToAbort.UploadId);
-
-        var objectDirectories = new ObjectVersionDirectories(bucket.Name, objectToAbort);
-
-        Directory.Delete(objects.Any() ?
-            pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.ObjectVersionDirectory) :
-            pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.ObjectDirectory), true);
-
-        await Task.WhenAll(objectsBuilder
-            .ToDelete(new ObjectsBuilder.DeleteObjectByBucketId(bucket.Id, objectToAbort.UploadId))
-            .ToDelete(new ObjectsBuilder.DeleteObjectByFileKey(bucket.Id, objectToAbort.FileKey, objectToAbort.UploadId))
-            .Build(), partByUploadIdRepository.Delete(bucket.Id, objectToAbort.UploadId));
+        // var objects = (await objectByFileKeyRepository.Get(bucket.Id, objectToAbort.FileKey)).Where(o => o.UploadId != objectToAbort.UploadId);
+        //
+        // var objectDirectories = new ObjectVersionDirectories(bucket.Name, objectToAbort);
+        //
+        // Directory.Delete(objects.Any() ?
+        //     pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.ObjectVersionDirectory) :
+        //     pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.ObjectDirectory), true);
+        //
+        // await Task.WhenAll(objectsBuilder
+        //     .ToDelete(new ObjectsBuilder.DeleteObjectByBucketId(bucket.Id, objectToAbort.UploadId))
+        //     .ToDelete(new ObjectsBuilder.DeleteObjectByFileKey(bucket.Id, objectToAbort.FileKey, objectToAbort.UploadId))
+        //     .Build(), partByUploadIdRepository.Delete(bucket.Id, objectToAbort.UploadId));
 
         return new ObjectServiceStatusResponse
         {
