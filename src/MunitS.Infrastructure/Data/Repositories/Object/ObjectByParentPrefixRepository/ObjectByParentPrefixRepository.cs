@@ -11,9 +11,9 @@ public class ObjectByParentPrefixRepository(CassandraConnector connector) : IObj
         return (await _objects.Where(o => o.BucketId == bucketId && o.ParentPrefix == parentPrefix).ExecuteAsync()).ToList();
     }
 
-    public async Task Delete(Guid bucketId, string parentPrefix)
+    public async Task Delete(Guid bucketId,  string fileName, string parentPrefix)
     {
-        await _objects.Where(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId).Delete().ExecuteAsync();
+        await _objects.Where(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId && o.FileName == fileName).Delete().ExecuteAsync();
     }
 
     public async Task Create(ObjectByParentPrefix objectByParentPrefix)

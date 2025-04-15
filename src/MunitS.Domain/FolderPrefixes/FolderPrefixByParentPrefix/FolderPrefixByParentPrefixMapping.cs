@@ -9,8 +9,7 @@ public class FolderPrefixByParentPrefixMapping : Mappings
     {
         For<FolderPrefixByParentPrefix>()
             .TableName(TableName)
-            .PartitionKey(c => c.BucketId, c => c.ParentPrefix)
-            .Column(c => c.Id, cm => cm.WithName("id"))
+            .PartitionKey(c => c.BucketId)
             .Column(c => c.BucketId, cm => cm.WithName("bucket_id"))
             .Column(c => c.ParentPrefix, cm => cm.WithName("parent_prefix"))
             .Column(c => c.Prefix, cm => cm.WithName("prefix"));

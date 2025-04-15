@@ -4,6 +4,6 @@ namespace MunitS.Infrastructure.Data.Repositories.Object.ObjectByParentPrefixRep
 public interface IObjectByParentPrefixRepository
 {
     public Task<List<ObjectByParentPrefix>> GetAll(Guid bucketId, string parentPrefix);
-    public Task Delete(Guid bucketId, string parentPrefix);
+    public Task Delete(Guid bucketId, string fileName, string parentPrefix);
     public Task Create(ObjectByParentPrefix objectByParentPrefix);
 }

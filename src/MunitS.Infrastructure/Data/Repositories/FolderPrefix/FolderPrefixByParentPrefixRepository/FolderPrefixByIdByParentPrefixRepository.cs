@@ -11,9 +11,9 @@ public class FolderPrefixByIdByParentPrefixRepository(CassandraConnector connect
         return (await _buckets.Where(b => b.ParentPrefix == parentPrefix && b.BucketId == bucketId).ExecuteAsync()).ToList();
     }
 
-    public async Task Delete(Guid bucketId, string parentPrefix)
+    public async Task Delete(Guid bucketId, string parentPrefix, string prefix)
     {
-        await _buckets.Where(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId).Delete().ExecuteAsync();
+        await _buckets.Where(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId && o.Prefix == prefix).Delete().ExecuteAsync();
     }
 
     public async Task Create(FolderPrefixByParentPrefix folderPrefixByParentPrefix)

@@ -5,31 +5,49 @@ option csharp_namespace = "MunitS.Protos";
 package object;
 
 service ObjectsService {
-  rpc CreateObject(CreateObjectRequest) returns (ObjectServiceStatusResponse);
-  rpc UploadObject(stream UploadObjectRequest) returns (ObjectServiceStatusResponse);
+  rpc InitiateMultipartUpload(InitiateMultipartUploadRequest) returns (InitiateMultipartUploadResponse);
+  rpc AbortMultipartUpload(AbortMultipartUploadRequest) returns (ObjectServiceStatusResponse);
+  rpc GetPartUploadUrl(GetPartUploadUrlRequest) returns (GetPartUploadUrlResponse);
+  rpc CompleteMultipartUpload(CompleteMultipartUploadRequest) returns (ObjectServiceStatusResponse);
+  
   rpc DeleteObject(DeleteObjectRequest) returns (ObjectServiceStatusResponse);
   rpc GetObjectByPrefix(GetObjectByPrefixRequest) returns (GetObjectsByPrefixResponse);
 }
 
-// Upload object
-message CreateObjectRequest {
+// Initiate multipart upload
+message InitiateMultipartUploadRequest {
   string bucketId = 1;
   string fileKey = 2;
-  string contentType = 3;
-  int64 sizeInBytes = 4;
+  int64 sizeInBytes = 3;
+  string mimeType = 4;
 }
 
-// Upload object
-message UploadObjectRequest {
+message InitiateMultipartUploadResponse {
+  string uploadId = 1;
+}
+
+// AbortMultipartUpload
+message AbortMultipartUploadRequest {
   string bucketId = 1;
-  string fileKey = 2;
-  int64 totalChunks = 3;
-  Chunk chunk = 4;
+  string uploadId = 2;
 }
 
-message Chunk {
-  bytes dataStream = 1;
-  int64 chunkIndex = 3;
+// GetMultipartUploadUrls
+message GetPartUploadUrlRequest {
+  string bucketId = 1;
+  string uploadId = 2;
+  int32 partNumber = 3;
+}
+
+message GetPartUploadUrlResponse {
+  string url = 1;
+}
+
+// CompleteMultipartUpload
+message CompleteMultipartUploadRequest {
+  string bucketId = 1;
+  string uploadId = 2;
+  map<int32, string> eTags = 3;
 }
 
 // Delete object

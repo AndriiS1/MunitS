@@ -1,21 +1,33 @@
 using Grpc.Core;
 using MediatR;
 using MunitS.Protos;
-using MunitS.UseCases.Processors.Objects.Commands.Create;
-using MunitS.UseCases.Processors.Objects.Commands.Upload;
+using MunitS.UseCases.Processors.Objects.Commands.AbortMultipartUpload;
+using MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
+using MunitS.UseCases.Processors.Objects.Commands.InitiateMultipartUpload;
 using MunitS.UseCases.Processors.Objects.Queries.GetObjects;
+using MunitS.UseCases.Processors.Objects.Queries.GetPartUploadUrl;
 namespace MunitS.UseCases.Processors.Objects;
 
 public class ObjectsServiceProcessor(IMediator mediator) : ObjectsService.ObjectsServiceBase
 {
-    public override async Task<ObjectServiceStatusResponse> CreateObject(CreateObjectRequest request, ServerCallContext context)
+    public override async Task<InitiateMultipartUploadResponse> InitiateMultipartUpload(InitiateMultipartUploadRequest request, ServerCallContext context)
     {
-        return await mediator.Send(new CreateObjectCommand(request));
+        return await mediator.Send(new InitiateMultipartUploadCommand(request));
     }
-    
-    public override async Task<ObjectServiceStatusResponse> UploadObject(IAsyncStreamReader<UploadObjectRequest> requestStream, ServerCallContext context)
+
+    public override async Task<ObjectServiceStatusResponse> AbortMultipartUpload(AbortMultipartUploadRequest request, ServerCallContext context)
     {
-        return await mediator.Send(new UploadObjectCommand(requestStream));
+        return await mediator.Send(new AbortMultipartUploadCommand(request));
+    }
+
+    public override async Task<GetPartUploadUrlResponse> GetPartUploadUrl(GetPartUploadUrlRequest request, ServerCallContext context)
+    {
+        return await mediator.Send(new GetPartUploadUrQuery(request));
+    }
+
+    public override async Task<ObjectServiceStatusResponse> CompleteMultipartUpload(CompleteMultipartUploadRequest request, ServerCallContext context)
+    {
+        return await mediator.Send(new CompleteMultipartUploadCommand(request));
     }
 
     public override async Task<GetObjectsByPrefixResponse> GetObjectByPrefix(GetObjectByPrefixRequest request, ServerCallContext context)
@@ -23,4 +35,3 @@ public class ObjectsServiceProcessor(IMediator mediator) : ObjectsService.Object
         return await mediator.Send(new GetObjectsQuery(request));
     }
 }
-
