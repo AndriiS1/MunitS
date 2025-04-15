@@ -83,6 +83,7 @@ CREATE TABLE objects_by_file_key (
     upload_id UUID,
     file_key TEXT,
     upload_status TEXT,
+    uploaded_at TIMESTAMP,
     PRIMARY KEY ((bucket_id), file_key, upload_id)
 );
 

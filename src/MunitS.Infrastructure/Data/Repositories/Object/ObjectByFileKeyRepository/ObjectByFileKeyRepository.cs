@@ -12,6 +12,11 @@ public class ObjectByFileKeyRepository(CassandraConnector connector) : IObjectBy
         return (await _objects.Where(o => o.BucketId == bucketId && o.FileKey == fileKey).ExecuteAsync()).ToList();
     }
 
+    public async Task<ObjectByFileKey?> Any(Guid bucketId, string fileKey)
+    {
+        return await _objects.FirstOrDefault(o => o.BucketId == bucketId && o.FileKey == fileKey).ExecuteAsync();
+    }
+    
     public async Task Delete(Guid bucketId, string fileKey, Guid uploadId)
     {
         await _objects.Where(o => o.FileKey == fileKey && o.BucketId == bucketId && o.UploadId == uploadId).Delete().ExecuteAsync();

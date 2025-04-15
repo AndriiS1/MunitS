@@ -19,12 +19,12 @@ public class ObjectByUploadId
     public required long SizeInBytes { get; init; }
     public required string MimeType { get; init; }
 
-    public static ObjectByUploadId Create(Guid bucketId, Guid divisionId, string fileKey, string fileName,
+    public static ObjectByUploadId Create(Guid bucketId, Guid divisionId, Guid objectId, string fileKey, string fileName,
         DateTimeOffset initiatedAt, DivisionType.SizeType divisionSizeType, string extension, string mimeType, long sizeInBytes)
     {
         return new ObjectByUploadId
         {
-            Id = Guid.NewGuid(),
+            Id = objectId,
             BucketId = bucketId,
             FileKey = fileKey,
             FileName = fileName,

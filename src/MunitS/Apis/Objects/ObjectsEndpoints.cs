@@ -14,12 +14,12 @@ public static class ObjectsEndpoints
 
     public static void MapObjectsEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPut("objects/upload/{uploadId}/parts", UploadObject)
+        app.MapPut("objects/{objectId}/upload/{uploadId}/parts", UploadObject)
             .WithGroupName(Source)
             .DisableAntiforgery();
     }
 
-    private static async Task<IResult> UploadObject([FromRoute] string uploadId, [FromQuery] string bucketId, [FromQuery] string objectId,
+    private static async Task<IResult> UploadObject([FromRoute] string objectId, [FromRoute] string uploadId, [FromQuery] string bucketId,
         [FromQuery] int partNumber, [FromQuery] long expiresAt, [FromQuery] string signature, [FromForm] IFormFile file,
         [FromServices] IMediator mediator, [FromServices] IOptions<StorageOptions> options)
     {

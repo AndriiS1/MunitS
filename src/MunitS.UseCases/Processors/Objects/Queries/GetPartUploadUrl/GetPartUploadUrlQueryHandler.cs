@@ -33,9 +33,9 @@ public class GetPartUploadUrlQueryHandler(IOptions<StorageOptions> options,
         var signatureBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(dataToSign));
         var signature = Convert.ToHexString(signatureBytes).ToLowerInvariant();
 
-        var queryParams = $"?bucketId={bucket.Id}objectId={@object.Id}&partNumber={query.Request.PartNumber}&expiresAt={expirationUnix}&signature={signature}";
+        var queryParams = $"?bucketId={bucket.Id}&partNumber={query.Request.PartNumber}&expiresAt={expirationUnix}&signature={signature}";
 
-        var url = $"{options.Value.BaseUrl}/objects/upload/{query.Request.UploadId}/parts/{queryParams}";
+        var url = $"{options.Value.BaseUrl}/objects/{@object.Id}/upload/{query.Request.UploadId}/parts/{queryParams}";
 
         return new GetPartUploadUrlResponse
         {
