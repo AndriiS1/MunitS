@@ -1,5 +1,5 @@
-using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Object.ObjectByFileKey;
+using MunitS.Domain.Object.ObjectByUploadId;
 namespace MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 
 public interface IObjectByFileKeyRepository

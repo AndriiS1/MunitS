@@ -5,13 +5,13 @@ using MunitS.Domain.Directory;
 using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.UploadPart;
 
 public class UploadPartCommandHandler(IBucketByIdRepository bucketByIdRepository,
-    IObjectByBucketIdRepository objectByBucketIdRepository,
+    IObjectByUploadIdRepository objectByUploadIdRepository,
     IPartByUploadIdRepository partByUploadIdRepository,
     IPathRetriever pathRetriever) : IRequestHandler<UploadPartCommand, IResult>
 {
@@ -21,7 +21,7 @@ public class UploadPartCommandHandler(IBucketByIdRepository bucketByIdRepository
 
         if (bucket == null) return Results.NotFound($"Bucket with name: {command.BucketId} is not found.");
 
-        var @object = await objectByBucketIdRepository.GetByUploadId(command.BucketId, command.UploadId);
+        var @object = await objectByUploadIdRepository.GetByUploadId(command.BucketId, command.ObjectId, command.UploadId);
 
         if (@object == null) return Results.NotFound("Object is not found.");
 

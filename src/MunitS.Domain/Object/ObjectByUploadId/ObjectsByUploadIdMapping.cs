@@ -1,13 +1,13 @@
 using Cassandra.Mapping;
-namespace MunitS.Domain.Object.ObjectByBucketId;
+namespace MunitS.Domain.Object.ObjectByUploadId;
 
-public class ObjectsByBucketIdMapping : Mappings
+public class ObjectsByUploadIdMapping : Mappings
 {
-    private const string TableName = "objects_by_bucket_id";
+    private const string TableName = "objects_by_upload_id";
 
-    public ObjectsByBucketIdMapping()
+    public ObjectsByUploadIdMapping()
     {
-        For<ObjectByBucketId>()
+        For<ObjectByUploadId>()
             .TableName(TableName)
             .PartitionKey(c => c.BucketId)
             .Column(c => c.Id, cm => cm.WithName("id"))

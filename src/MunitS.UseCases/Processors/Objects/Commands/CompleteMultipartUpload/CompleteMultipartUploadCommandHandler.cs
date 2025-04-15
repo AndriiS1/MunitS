@@ -3,19 +3,19 @@ using MediatR;
 using MunitS.Domain.Directory;
 using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Division.DivisionByBucketId;
-using MunitS.Domain.Object.ObjectByBucketId;
+using MunitS.Domain.Object.ObjectByUploadId;
 using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
 
-public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository objectByBucketIdRepository,
+public class CompleteMultipartUploadCommandHandler(IObjectByUploadIdRepository objectByUploadIdRepository,
     IBucketByIdRepository bucketByIdRepository,
     IPathRetriever pathRetriever,
     IPartByUploadIdRepository partByUploadIdRepository,
@@ -31,7 +31,7 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
 
         var uploadId = Guid.Parse(command.Request.UploadId);
 
-        var objectToComplete = await objectByBucketIdRepository.GetByUploadId(bucket.Id, uploadId);
+        var objectToComplete = await objectByUploadIdRepository.GetByUploadId(bucket.Id, Guid.Parse(command.Request.ObjectId), uploadId);
 
         if (objectToComplete is null)
         {
@@ -66,7 +66,7 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
 
         List<Task> tasks =
         [
-            objectByBucketIdRepository.UpdateUploadStatus(bucket.Id, uploadId, UploadStatus.Completed),
+            objectByUploadIdRepository.UpdateUploadStatus(bucket.Id, Guid.Parse(command.Request.ObjectId), uploadId, UploadStatus.Completed),
             objectByFileKeyRepository.UpdateUploadStatus(bucket.Id, objectToComplete.FileKey, uploadId, UploadStatus.Completed),
             partByUploadIdRepository.Delete(bucket.Id, uploadId),
             bucketCounterRepository.IncrementObjectsCount(bucket.Id),
@@ -75,9 +75,9 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
         ];
 
         await Task.WhenAll(tasks);
-        
+
         Directory.Delete(pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory), true);
-        
+
         var objectVersions = await objectByFileKeyRepository.GetAll(bucket.Id, objectToComplete.FileKey);
 
         if (bucket.VersioningEnabled)
@@ -85,11 +85,10 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             if (objectVersions.Count > bucket.VersionsLimit)
             {
                 var oldestObject = objectVersions.OrderByDescending(v => v.UploadedAt).First();
-                
-                
+
             }
         }
-        
+
         return new ObjectServiceStatusResponse
         {
             Status = "Success"

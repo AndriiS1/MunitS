@@ -2,8 +2,8 @@ using Grpc.Core;
 using MediatR;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionById;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services.DivisionBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
@@ -13,7 +13,7 @@ namespace MunitS.UseCases.Processors.Objects.Commands.Delete;
 public class DeleteObjectCommandHandler(IObjectsBuilder objectsBuilder,
     IObjectByFileKeyRepository objectByFileKeyRepository,
     IBucketByIdRepository bucketByIdRepository,
-    IObjectByBucketIdRepository objectByBucketIdRepository,
+    IObjectByUploadIdRepository objectByUploadIdRepository,
     IPathRetriever pathRetriever,
     IDivisionByIdRepository divisionByIdRepository,
     IDivisionBuilder divisionBuilder) : IRequestHandler<DeleteObjectCommand, InitiateMultipartUploadResponse>
@@ -31,7 +31,7 @@ public class DeleteObjectCommandHandler(IObjectsBuilder objectsBuilder,
             throw new RpcException(new Status(StatusCode.NotFound, "No object versions found."));
         }
 
-        var objectVersions = await objectByBucketIdRepository.GetAll(bucket.Id, objects.Select(o => o.UploadId));
+        // var objectVersions = await objectByUploadIdRepository.GetAll(bucket.Id, objects.Select(o => o.UploadId));
 
         return new InitiateMultipartUploadResponse();
     }

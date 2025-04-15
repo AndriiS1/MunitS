@@ -3,8 +3,8 @@ using MediatR;
 using MunitS.Domain.Directory;
 using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Division.DivisionByBucketId;
-using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Object.ObjectByFileKey;
+using MunitS.Domain.Object.ObjectByUploadId;
 using MunitS.Domain.Rules;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionById;
@@ -67,7 +67,7 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
         var initiatedAt = DateTimeOffset.UtcNow;
         var divisionSizeType = Enum.Parse<DivisionType.SizeType>(division.Type);
 
-        var objectByBucketId = ObjectByBucketId.Create(bucket.Id, division.Id, command.Request.FileKey,
+        var objectByBucketId = ObjectByUploadId.Create(bucket.Id, division.Id, command.Request.FileKey,
             fileName, initiatedAt, divisionSizeType, FileKeyRule.GetExtension(command.Request.FileKey), command.Request.MimeType, command.Request.SizeInBytes);
         var objectByFileKey = ObjectByFileKey.Create(bucket.Id, objectByBucketId.Id, objectByBucketId.UploadId, command.Request.FileKey);
 

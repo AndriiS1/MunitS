@@ -23,20 +23,23 @@ message InitiateMultipartUploadRequest {
 }
 
 message InitiateMultipartUploadResponse {
-  string uploadId = 1;
+  string objectId = 1;
+  string uploadId = 2;
 }
 
 // AbortMultipartUpload
 message AbortMultipartUploadRequest {
   string bucketId = 1;
-  string uploadId = 2;
+  string objectId = 2;
+  string uploadId = 3;
 }
 
 // GetMultipartUploadUrls
 message GetPartUploadUrlRequest {
   string bucketId = 1;
-  string uploadId = 2;
-  int32 partNumber = 3;
+  string objectId = 2;
+  string uploadId = 3;
+  int32 partNumber = 4;
 }
 
 message GetPartUploadUrlResponse {
@@ -46,8 +49,9 @@ message GetPartUploadUrlResponse {
 // CompleteMultipartUpload
 message CompleteMultipartUploadRequest {
   string bucketId = 1;
-  string uploadId = 2;
-  map<int32, string> eTags = 3;
+  string objectId = 2;
+  string uploadId = 3;
+  map<int32, string> eTags = 4;
 }
 
 // Delete object

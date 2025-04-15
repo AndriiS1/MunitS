@@ -1,7 +1,7 @@
 using MunitS.Domain.Division.DivisionByBucketId;
-namespace MunitS.Domain.Object.ObjectByBucketId;
+namespace MunitS.Domain.Object.ObjectByUploadId;
 
-public class ObjectByBucketId
+public class ObjectByUploadId
 {
     public required Guid Id { get; init; }
     public required Guid BucketId { get; init; }
@@ -19,10 +19,10 @@ public class ObjectByBucketId
     public required long SizeInBytes { get; init; }
     public required string MimeType { get; init; }
 
-    public static ObjectByBucketId Create(Guid bucketId, Guid divisionId, string fileKey, string fileName,
+    public static ObjectByUploadId Create(Guid bucketId, Guid divisionId, string fileKey, string fileName,
         DateTimeOffset initiatedAt, DivisionType.SizeType divisionSizeType, string extension, string mimeType, long sizeInBytes)
     {
-        return new ObjectByBucketId
+        return new ObjectByUploadId
         {
             Id = Guid.NewGuid(),
             BucketId = bucketId,
@@ -32,7 +32,7 @@ public class ObjectByBucketId
             InitiatedAt = initiatedAt,
             UploadId = Guid.NewGuid(),
             DivisionSizeType = divisionSizeType.ToString(),
-            UploadStatus = Object.ObjectByBucketId.UploadStatus.Instantiated.ToString(),
+            UploadStatus = Object.ObjectByUploadId.UploadStatus.Instantiated.ToString(),
             Extension = extension,
             MimeType = mimeType,
             SizeInBytes = sizeInBytes,

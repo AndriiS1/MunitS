@@ -1,36 +1,39 @@
 using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Division.DivisionByBucketId;
-using MunitS.Domain.Object.ObjectByBucketId;
+using MunitS.Domain.Object.ObjectByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Services.ObjectDeletionService;
 
-public class ObjectDeletionService(IBucketCounterRepository bucketCounterRepository, IDivisionCounterRepository divisionCounterRepository,
-    IObjectByBucketIdRepository objectByBucketIdRepository, IObjectByFileKeyRepository objectByFileKeyRepository,
-    IPartByUploadIdRepository partByUploadIdRepository, IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository,
+public class ObjectDeletionService(IBucketCounterRepository bucketCounterRepository,
+    IDivisionCounterRepository divisionCounterRepository,
+    IObjectByUploadIdRepository objectByUploadIdRepository,
+    IObjectByFileKeyRepository objectByFileKeyRepository,
+    IPartByUploadIdRepository partByUploadIdRepository,
+    IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository,
     IPathRetriever pathRetriever)
 {
-    public async Task DeleteObject(string bucketName, ObjectByBucketId objectByBucketId, bool deleteEntireObject = true)
+    public async Task DeleteObject(string bucketName, ObjectByUploadId objectByUploadId, bool deleteEntireObject = true)
     {
-        await bucketCounterRepository.IncrementObjectsCount(objectByBucketId.BucketId, -1);
-        await bucketCounterRepository.IncrementSizeInBytesCount(objectByBucketId.BucketId, objectByBucketId.SizeInBytes);
+        await bucketCounterRepository.IncrementObjectsCount(objectByUploadId.BucketId, -1);
+        await bucketCounterRepository.IncrementSizeInBytesCount(objectByUploadId.BucketId, objectByUploadId.SizeInBytes);
 
-        await divisionCounterRepository.IncrementObjectsCount(objectByBucketId.BucketId, 
-            Enum.Parse<DivisionType.SizeType>(objectByBucketId.DivisionSizeType), objectByBucketId.BucketId, -1);
-        
-        await objectByBucketIdRepository.Delete(objectByBucketId.BucketId, objectByBucketId.UploadId);
-        await objectByFileKeyRepository.Delete(objectByBucketId.BucketId, objectByBucketId.FileKey, objectByBucketId.UploadId);
+        await divisionCounterRepository.IncrementObjectsCount(objectByUploadId.BucketId,
+            Enum.Parse<DivisionType.SizeType>(objectByUploadId.DivisionSizeType), objectByUploadId.BucketId, -1);
 
-        await partByUploadIdRepository.Delete(objectByBucketId.BucketId, objectByBucketId.UploadId);
-        
-        await DeleteObjectPrefixesRelations(objectByBucketId.BucketId, objectByBucketId.FileKey);
-        
-        var objectDirectories = new ObjectVersionDirectories(bucketName, objectByBucketId);
+        await objectByUploadIdRepository.Delete(objectByUploadId.BucketId, objectByUploadId.UploadId);
+        await objectByFileKeyRepository.Delete(objectByUploadId.BucketId, objectByUploadId.FileKey, objectByUploadId.UploadId);
+
+        await partByUploadIdRepository.Delete(objectByUploadId.BucketId, objectByUploadId.UploadId);
+
+        await DeleteObjectPrefixesRelations(objectByUploadId.BucketId, objectByUploadId.FileKey);
+
+        var objectDirectories = new ObjectVersionDirectories(bucketName, objectByUploadId);
 
         if (deleteEntireObject)
         {
@@ -46,7 +49,7 @@ public class ObjectDeletionService(IBucketCounterRepository bucketCounterReposit
 
     private async Task DeleteObjectPrefixesRelations(Guid bucketId, string fileKey)
     {
-        var trimmedFileKey =  fileKey.Trim('/');
+        var trimmedFileKey = fileKey.Trim('/');
         var split = trimmedFileKey.Split("/");
         var folders = split[new Range(0, split.Length - 1)];
         var fileName = split[^1];
@@ -61,19 +64,19 @@ public class ObjectDeletionService(IBucketCounterRepository bucketCounterReposit
             parentPrefixes.Add(parentPrefix);
         }
 
-        var objectParentPrefix = parentPrefixes.Count > 0 ? parentPrefixes.Last(): "/";
-        
+        var objectParentPrefix = parentPrefixes.Count > 0 ? parentPrefixes.Last() : "/";
+
         parentPrefixes.Add(objectParentPrefix);
 
         parentPrefixes.Reverse();
 
         await objectSuffixByParentPrefixRepository.Delete(bucketId, objectParentPrefix, fileName);
-        
+
         foreach (var prefix in parentPrefixes)
         {
             var anyRelatedObjectSuffix = await objectSuffixByParentPrefixRepository.Any(bucketId, prefix);
-            
-            if(anyRelatedObjectSuffix != null) continue;
+
+            if (anyRelatedObjectSuffix != null) continue;
 
             await objectSuffixByParentPrefixRepository.Delete(bucketId, objectParentPrefix);
         }

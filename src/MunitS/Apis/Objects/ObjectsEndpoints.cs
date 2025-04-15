@@ -19,25 +19,25 @@ public static class ObjectsEndpoints
             .DisableAntiforgery();
     }
 
-    private static async Task<IResult> UploadObject([FromRoute] string uploadId, [FromQuery] string bucketId,
+    private static async Task<IResult> UploadObject([FromRoute] string uploadId, [FromQuery] string bucketId, [FromQuery] string objectId,
         [FromQuery] int partNumber, [FromQuery] long expiresAt, [FromQuery] string signature, [FromForm] IFormFile file,
         [FromServices] IMediator mediator, [FromServices] IOptions<StorageOptions> options)
     {
-        if (!ValidateSignedUrl(uploadId, bucketId, partNumber, expiresAt, signature, options.Value.SignatureSecret))
+        if (!ValidateSignedUrl(uploadId, bucketId, objectId, partNumber, expiresAt, signature, options.Value.SignatureSecret))
         {
             return Results.Forbid();
         }
 
-        return await mediator.Send(new UploadPartCommand(Guid.Parse(bucketId),
+        return await mediator.Send(new UploadPartCommand(Guid.Parse(bucketId), Guid.Parse(objectId),
             Guid.Parse(uploadId), file, partNumber));
     }
 
-    private static bool ValidateSignedUrl(string uploadId, string bucketId, int partNumber, long expiresAt, string signature, string signatureSecret)
+    private static bool ValidateSignedUrl(string uploadId, string bucketId, string objectId, int partNumber, long expiresAt, string signature, string signatureSecret)
     {
         var nowUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         if (nowUnix > expiresAt) return false;
 
-        var dataToSign = SignatureRule.GetSignature(bucketId, uploadId, partNumber, expiresAt);
+        var dataToSign = SignatureRule.GetSignature(bucketId, objectId, uploadId, partNumber, expiresAt);
 
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(signatureSecret));
         var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(dataToSign));

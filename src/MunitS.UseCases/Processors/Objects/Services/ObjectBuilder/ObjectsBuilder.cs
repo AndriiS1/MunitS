@@ -1,14 +1,14 @@
-using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Object.ObjectByFileKey;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
+using MunitS.Domain.Object.ObjectByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 namespace MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 
-public class ObjectsBuilder(IObjectByBucketIdRepository objectByBucketIdRepository,
+public class ObjectsBuilder(IObjectByUploadIdRepository objectByUploadIdRepository,
     IObjectByFileKeyRepository objectByFileKeyRepository) : IObjectsBuilder
 {
     private readonly List<DeleteObjectByBucketId> _objectByBucketIdsToDelete = [];
-    private readonly List<ObjectByBucketId> _objectByBucketIdsToInsert = [];
+    private readonly List<ObjectByUploadId> _objectByBucketIdsToInsert = [];
 
     private readonly List<DeleteObjectByFileKey> _objectByFileKeysToDelete = [];
     private readonly List<ObjectByFileKey> _objectByFileKeysToInsert = [];
@@ -25,9 +25,9 @@ public class ObjectsBuilder(IObjectByBucketIdRepository objectByBucketIdReposito
         return this;
     }
 
-    public ObjectsBuilder ToInsert(ObjectByBucketId objectByBucketId)
+    public ObjectsBuilder ToInsert(ObjectByUploadId objectByUploadId)
     {
-        _objectByBucketIdsToInsert.Add(objectByBucketId);
+        _objectByBucketIdsToInsert.Add(objectByUploadId);
         return this;
     }
 
@@ -39,10 +39,10 @@ public class ObjectsBuilder(IObjectByBucketIdRepository objectByBucketIdReposito
 
     public async Task Build()
     {
-        var insertTasks = _objectByBucketIdsToInsert.Select(objectByBucketIdRepository.Create).ToList()
+        var insertTasks = _objectByBucketIdsToInsert.Select(objectByUploadIdRepository.Create).ToList()
             .Concat(_objectByFileKeysToInsert.Select(objectByFileKeyRepository.Create));
 
-        var deleteTasks = _objectByBucketIdsToDelete.Select(o => objectByBucketIdRepository.Delete(o.BucketId, o.UploadId))
+        var deleteTasks = _objectByBucketIdsToDelete.Select(o => objectByUploadIdRepository.Delete(o.BucketId, o.UploadId))
             .Concat(_objectByFileKeysToDelete.Select(o => objectByFileKeyRepository.Delete(o.BucketId, o.FileKey, o.UploadId)));
 
         await Task.WhenAll(insertTasks.Concat(deleteTasks));

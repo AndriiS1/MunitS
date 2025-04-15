@@ -2,15 +2,15 @@ using Grpc.Core;
 using MediatR;
 using MunitS.Domain.Directory.Dtos;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.AbortMultipartUpload;
 
-public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository objectByBucketIdRepository,
+public class AbortMultipartUploadCommandHandler(IObjectByUploadIdRepository objectByUploadIdRepository,
     IObjectByFileKeyRepository objectByFileKeyRepository,
     IBucketByIdRepository bucketByIdRepository,
     IObjectsBuilder objectsBuilder,
@@ -24,7 +24,7 @@ public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository obje
 
         if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {command.Request.BucketId} is not found."));
 
-        var objectToAbort = await objectByBucketIdRepository.GetByUploadId(bucket.Id, Guid.Parse(command.Request.UploadId));
+        var objectToAbort = await objectByUploadIdRepository.GetByUploadId(bucket.Id, Guid.Parse(command.Request.ObjectId), Guid.Parse(command.Request.UploadId));
 
         if (objectToAbort is null)
         {

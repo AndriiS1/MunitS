@@ -7,8 +7,8 @@ using MunitS.Domain.Bucket.BucketByName;
 using MunitS.Domain.Bucket.BucketCounter;
 using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Division.DivisionCounter;
-using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Object.ObjectByFileKey;
+using MunitS.Domain.Object.ObjectByUploadId;
 using MunitS.Domain.ObjectSuffix.ObjectSuffixByParentPrefix;
 using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data;
@@ -17,8 +17,8 @@ using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByNameRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionById;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Infrastructure.Options.DataBase;
@@ -59,7 +59,7 @@ public static class InfrastructureExtensions
         MappingConfiguration.Global.Define<DivisionsByBucketIdMapping>();
         MappingConfiguration.Global.Define<DivisionCountersMapping>();
         MappingConfiguration.Global.Define<PartsByUploadIdMapping>();
-        MappingConfiguration.Global.Define<ObjectsByBucketIdMapping>();
+        MappingConfiguration.Global.Define<ObjectsByUploadIdMapping>();
         MappingConfiguration.Global.Define<ObjectsByFileKeyMapping>();
         MappingConfiguration.Global.Define<ObjectSuffixesByParentPrefixMapping>();
     }
@@ -71,7 +71,7 @@ public static class InfrastructureExtensions
         builder.Services.AddSingleton<IBucketByIdRepository, BucketByIdByIdRepository>();
         builder.Services.AddSingleton<IBucketCounterRepository, BucketCounterRepository>();
         builder.Services.AddSingleton<IBucketByNameRepository, BucketByIdByNameRepository>();
-        builder.Services.AddSingleton<IObjectByBucketIdRepository, ObjectByBucketIdRepository>();
+        builder.Services.AddSingleton<IObjectByUploadIdRepository, ObjectByUploadIdRepository>();
         builder.Services.AddSingleton<IObjectByFileKeyRepository, ObjectByFileKeyRepository>();
         builder.Services.AddSingleton<IDivisionByIdRepository, DivisionByIdRepository>();
         builder.Services.AddSingleton<IDivisionCounterRepository, DivisionCounterRepository>();

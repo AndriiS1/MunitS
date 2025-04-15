@@ -17,7 +17,7 @@ public class ObjectByFileKey
             BucketId = bucketId,
             FileKey = fileKey,
             UploadId = uploadId,
-            UploadStatus = ObjectByBucketId.UploadStatus.Instantiated.ToString()
+            UploadStatus = ObjectByUploadId.UploadStatus.Instantiated.ToString()
         };
     }
 }
