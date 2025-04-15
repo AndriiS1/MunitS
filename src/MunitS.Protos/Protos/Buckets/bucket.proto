@@ -7,7 +7,7 @@ package bucket;
 service BucketsService {
   rpc CreateBucket(CreateBucketRequest) returns (CreateBucketResponse);
   rpc DeleteBucket(DeleteBucketRequest) returns (BucketServiceStatusResponse);
-  rpc GetBucket(GetBucketRequest) returns (GetBucketResponse);
+  rpc GetBucket(GetBucketRequest) returns (BucketResponse);
   rpc GetBuckets(GetBucketsRequest) returns (GetBucketsResponse);
   rpc BucketExistsCheck(BucketExistsCheckRequest) returns (BucketExistsResponse);
 }
@@ -33,11 +33,6 @@ message GetBucketRequest {
   string id = 1;
 }
 
-message GetBucketResponse {
-  string status = 1;
-  BucketResponse content = 2;
-}
-
 message BucketResponse {
   string id = 1;
   string name = 2;
@@ -57,8 +52,7 @@ message GetBucketsRequest {
 }
 
 message GetBucketsResponse {
-  string status = 1;
-  repeated BucketResponse content = 2;
+  repeated BucketResponse buckets = 2;
 }
 
 // Check if exists

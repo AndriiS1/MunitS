@@ -83,8 +83,7 @@ message ObjectSuffixesCursor
 }
 
 message GetObjectsSuffixesResponse {
-  string status = 1;
-  ObjectSuffixesResponse content = 2;
+  ObjectSuffixesResponse suffixes = 2;
 }
 
 message ObjectSuffixesResponse {
@@ -111,9 +110,8 @@ message GetObjectRequest {
 message GetObjectResponse {
   string id = 1;
   string fileKey = 2;
-  string fileName = 3;
-  string createdAt = 4;
-  repeated ObjectVersionResponse Versions = 5;
+  string createdAt = 3;
+  repeated ObjectVersionResponse Versions = 4;
 }
 
 message ObjectVersionResponse {

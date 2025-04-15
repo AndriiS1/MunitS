@@ -44,8 +44,7 @@ public static class ObjectResponseMappers
     {
         var response = new GetObjectsSuffixesResponse
         {
-            Status = "Success",
-            Content = GetObjectSuffixesResponse(page)
+            Suffixes = GetObjectSuffixesResponse(page)
         };
 
         return response;
@@ -81,7 +80,6 @@ public static class ObjectResponseMappers
         {
             Id = objectByFileKey.Id.ToString(),
             CreatedAt = objectByFileKey.CreatedAt.ToString(),
-            FileName = objectByFileKey.FileKey,
             FileKey = objectByFileKey.FileKey
         };
 
