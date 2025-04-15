@@ -30,7 +30,7 @@ public class ObjectsServiceProcessor(IMediator mediator) : ObjectsService.Object
         return await mediator.Send(new CompleteMultipartUploadCommand(request));
     }
 
-    public override async Task<GetObjectsByPrefixResponse> GetObjectByPrefix(GetObjectByPrefixRequest request, ServerCallContext context)
+    public override async Task<GetObjectsSuffixesResponse> GetObjectsByPrefix(GetObjectByPrefixRequest request, ServerCallContext context)
     {
         return await mediator.Send(new GetObjectsQuery(request));
     }

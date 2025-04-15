@@ -11,7 +11,7 @@ service ObjectsService {
   rpc CompleteMultipartUpload(CompleteMultipartUploadRequest) returns (ObjectServiceStatusResponse);
   
   rpc DeleteObject(DeleteObjectRequest) returns (ObjectServiceStatusResponse);
-  rpc GetObjectByPrefix(GetObjectByPrefixRequest) returns (GetObjectsByPrefixResponse);
+  rpc GetObjectsByPrefix(GetObjectByPrefixRequest) returns (GetObjectsSuffixesResponse);
 }
 
 // Initiate multipart upload
@@ -67,25 +67,31 @@ message GetObjectByPrefixRequest {
   string status = 1;
   string bucketId = 2;
   string prefix = 3;
+  int32 pageSize = 4;
+  ObjectSuffixesCursor cursor = 5;
 }
 
-message GetObjectsByPrefixResponse {
+message ObjectSuffixesCursor
+{
+  string Type = 1;
+  string Suffix = 2;
+}
+
+message GetObjectsSuffixesResponse {
   string status = 1;
-  ObjectsResponse content = 2;
+  ObjectSuffixesResponse content = 2;
 }
 
-message ObjectsResponse {
-  repeated FolderByPrefixResponse Folders = 1;
-  repeated ObjectByPrefixResponse Objects = 2;
+message ObjectSuffixesResponse {
+  repeated ObjectSuffixResponse ObjectSuffixes = 1;
+  ObjectSuffixesCursor nextCursor = 2;
+  bool hasNext = 3;
 }
 
-message ObjectByPrefixResponse {
+message ObjectSuffixResponse {
   string id = 1;
-  string fileName = 2;
-  string uploadedAt = 3;
-}
-
-message FolderByPrefixResponse {
-  string id = 1;
-  string prefix = 2;
+  string suffix = 2;
+  string createdAt = 3;
+  string type = 4;
+  string mimeType = 5;
 }

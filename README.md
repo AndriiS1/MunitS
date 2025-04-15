@@ -28,7 +28,7 @@ CREATE TABLE buckets_by_name (
 DROP TABLE IF EXISTS division_counters;
 CREATE TABLE division_counters (
     bucket_id UUID,
-    type TEXT,
+    type INT,
     id UUID,
     objects_count COUNTER,
     PRIMARY KEY ((bucket_id, type), id)
@@ -37,19 +37,23 @@ CREATE TABLE division_counters (
 DROP TABLE IF EXISTS divisions_by_bucket_id;
 CREATE TABLE divisions_by_bucket_id (
     bucket_id UUID,
-    type TEXT,
+    type INT,
     name TEXT,
     id UUID,
     objects_limit BIGINT,
     PRIMARY KEY ((bucket_id, type), id)
 );
 
-DROP TABLE IF EXISTS folder_prefixes_by_parent_prefix;
-CREATE TABLE folder_prefixes_by_parent_prefix (
+DROP TABLE IF EXISTS object_suffixes_by_parent_prefix;
+CREATE TABLE object_suffixes_by_parent_prefix (
+    id UUID,
     bucket_id UUID,
     parent_prefix TEXT,
-    prefix TEXT,
-    PRIMARY KEY ((bucket_id), parent_prefix)
+    suffix TEXT,
+    mime_type TEXT,
+    created_at TIMESTAMP,
+    type INT,
+    PRIMARY KEY ((bucket_id), parent_prefix, type, suffix)
 );
 
 DROP TABLE IF EXISTS metadata_by_object_id;
@@ -75,7 +79,7 @@ CREATE TABLE objects_by_bucket_id (
     division_size_type TEXT,
     uploaded_at TIMESTAMP,
     initiated_at TIMESTAMP,
-    upload_status TEXT,
+    upload_status INT,
     extension TEXT,
     PRIMARY KEY ((bucket_id), upload_id)
 );
@@ -86,20 +90,8 @@ CREATE TABLE objects_by_file_key (
     bucket_id UUID,
     upload_id UUID,
     file_key TEXT,
-    upload_status TEXT,
+    upload_status INT,
     PRIMARY KEY ((bucket_id), file_key, upload_id)
-);
-
-DROP TABLE IF EXISTS objects_by_parent_prefix;
-CREATE TABLE objects_by_parent_prefix (
-    id UUID,
-    bucket_id UUID,
-    file_name TEXT,
-    parent_prefix TEXT,
-    uploaded_at TIMESTAMP,
-    upload_id UUID,
-    initiated_at TIMESTAMP,
-    PRIMARY KEY ((bucket_id), parent_prefix, file_name)
 );
 
 DROP TABLE IF EXISTS parts_by_upload_id;

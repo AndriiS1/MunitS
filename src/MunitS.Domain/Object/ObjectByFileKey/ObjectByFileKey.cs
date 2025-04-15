@@ -1,3 +1,4 @@
+using MunitS.Domain.Object.ObjectByBucketId;
 namespace MunitS.Domain.Object.ObjectByFileKey;
 
 public class ObjectByFileKey
@@ -6,7 +7,7 @@ public class ObjectByFileKey
     public required Guid BucketId { get; init; }
     public required Guid UploadId { get; init; }
     public required string FileKey { get; init; }
-    public required string UploadStatus { get; init; }
+    public required UploadStatus UploadStatus { get; init; }
 
     public static ObjectByFileKey Create(Guid bucketId, Guid objectId, Guid uploadId, string fileKey)
     {
@@ -16,7 +17,7 @@ public class ObjectByFileKey
             BucketId = bucketId,
             FileKey = fileKey,
             UploadId = uploadId,
-            UploadStatus = ObjectByBucketId.UploadStatus.Instantiated.ToString()
+            UploadStatus = ObjectByBucketId.UploadStatus.Instantiated
         };
     }
 }

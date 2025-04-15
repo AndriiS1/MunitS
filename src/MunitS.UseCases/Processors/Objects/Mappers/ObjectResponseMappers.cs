@@ -1,41 +1,51 @@
-using MunitS.Domain.Object.ObjectByParentPrefix;
-using MunitS.Domain.Prefix.PrefixByParentPrefix;
+using MunitS.Domain.ObjectSuffix.ObjectSuffixByParentPrefix;
+using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository.Dtos;
 using MunitS.Protos;
 namespace MunitS.UseCases.Processors.Objects.Mappers;
 
 public static class ObjectResponseMappers
 {
-    public static GetObjectsByPrefixResponse FormatGetBucketResponse(List<ObjectByParentPrefix> objects, List<FolderPrefixByParentPrefix> folders)
+    private static ObjectSuffixResponse FormatObjectSuffixesResponse(ObjectSuffixByParentPrefix @object)
     {
-        return new GetObjectsByPrefixResponse
-        {
-            Content = FormatObjectsResponse(objects, folders)
-        };
-    }
-    private static ObjectByPrefixResponse FormatObjectByPrefixResponse(ObjectByParentPrefix @object)
-    {
-        return new ObjectByPrefixResponse
+        return new ObjectSuffixResponse
         {
             Id = @object.Id.ToString(),
-            FileName = @object.FileName,
-            UploadedAt = @object.UploadedAt.ToString()
+           Suffix = @object.Suffix,
+           Type = @object.Type.ToString(),
+           MimeType = @object.MimeType,
+           CreatedAt = @object.CreatedAt.ToString(),
         };
     }
 
-    private static FolderByPrefixResponse FormatFolderByPrefixResponse(FolderPrefixByParentPrefix folder)
+    private static ObjectSuffixesResponse GetObjectSuffixesResponse(ObjectSuffixesPage page)
     {
-        return new FolderByPrefixResponse
+        var response = new ObjectSuffixesResponse
         {
-            Prefix = folder.Prefix
+            HasNext = page.HasNext,
         };
+        
+        response.ObjectSuffixes.AddRange(page.Data.Select(FormatObjectSuffixesResponse));
+
+        if (page.NextCursor != null)
+        {
+            response.NextCursor = new ObjectSuffixesCursor
+            {
+                Suffix = page.NextCursor.Suffix,
+                Type = page.NextCursor.Type.ToString(),
+            };
+        }
+        
+        return response;
     }
-
-    private static ObjectsResponse FormatObjectsResponse(List<ObjectByParentPrefix> objects, List<FolderPrefixByParentPrefix> folders)
+    
+    public static GetObjectsSuffixesResponse FormatObjectSuffixes(ObjectSuffixesPage page)
     {
-        var response = new ObjectsResponse();
-        response.Objects.AddRange(objects.Select(FormatObjectByPrefixResponse));
-        response.Folders.AddRange(folders.Select(FormatFolderByPrefixResponse));
-
+        var response = new GetObjectsSuffixesResponse
+        {
+            Status = "Success",
+            Content = GetObjectSuffixesResponse(page)
+        };
+        
         return response;
     }
 }

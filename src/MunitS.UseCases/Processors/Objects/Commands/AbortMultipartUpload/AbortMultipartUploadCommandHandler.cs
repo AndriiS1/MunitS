@@ -1,7 +1,6 @@
 using Grpc.Core;
 using MediatR;
 using MunitS.Domain.Directory.Dtos;
-using MunitS.Domain.Rules;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
@@ -43,7 +42,6 @@ public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository obje
 
         await Task.WhenAll(objectsBuilder
             .ToDelete(new ObjectsBuilder.DeleteObjectByBucketId(bucket.Id, objectToAbort.UploadId))
-            .ToDelete(new ObjectsBuilder.DeleteObjectByParentPrefix(bucket.Id, FileKeyRule.GetFileName(objectToAbort.FileKey), FileKeyRule.GetParentPrefix(objectToAbort.FileKey)))
             .ToDelete(new ObjectsBuilder.DeleteObjectByFileKey(bucket.Id, objectToAbort.FileKey, objectToAbort.UploadId))
             .Build(), metadataBuilder
             .ToDelete(new MetadataBuilder.DeleteMetadataByObjectId(bucket.Id, objectToAbort.UploadId))

@@ -2,19 +2,17 @@ using Grpc.Core;
 using MediatR;
 using MunitS.Domain.Directory;
 using MunitS.Domain.Directory.Dtos;
-using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
-using MunitS.Infrastructure.Data.Repositories.FolderPrefix.FolderPrefixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
+using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
-using MunitS.UseCases.Processors.Service.ForlderPrefixesRetriever;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
 
@@ -26,7 +24,7 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
     IDivisionCounterRepository divisionCounterRepository,
     IBucketCounterRepository bucketCounterRepository,
     IObjectByFileKeyRepository objectByFileKeyRepository,
-    IFolderPrefixByParentPrefixRepository folderPrefixByParentPrefixRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
+    IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CompleteMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -85,10 +83,6 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             bucketCounterRepository.IncrementSizeInBytesCount(bucket.Id, metadata.SizeInBytes),
             divisionCounterRepository.IncrementObjectsCount(bucket.Id, objectToComplete.DivisionSizeType, objectToComplete.DivisionId)
         ];
-
-        var prefixes = FolderPrefixesRetriever.GetFolderPrefixes(bucket.Id, objectToComplete.FileKey, objectToComplete.Id);
-
-        tasks.AddRange(prefixes.Select(folderPrefixByParentPrefixRepository.Create));
 
         await Task.WhenAll(tasks);
 

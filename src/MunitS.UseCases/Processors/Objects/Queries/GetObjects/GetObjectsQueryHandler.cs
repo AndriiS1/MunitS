@@ -1,21 +1,24 @@
 using MediatR;
-using MunitS.Infrastructure.Data.Repositories.FolderPrefix.FolderPrefixByParentPrefixRepository;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByParentPrefixRepository;
+using MunitS.Domain.ObjectSuffix.ObjectSuffixByParentPrefix;
+using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository;
+using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository.Dtos;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Mappers;
 namespace MunitS.UseCases.Processors.Objects.Queries.GetObjects;
 
-public class UploadFileCommandHandler(IObjectByParentPrefixRepository objectByParentPrefixRepository,
-    IFolderPrefixByParentPrefixRepository folderPrefixByParentPrefixRepository): IRequestHandler<GetObjectsQuery, GetObjectsByPrefixResponse>
+public class UploadFileCommandHandler(IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository) 
+    : IRequestHandler<GetObjectsQuery, GetObjectsSuffixesResponse>
 {
-    public async Task<GetObjectsByPrefixResponse> Handle(GetObjectsQuery query, CancellationToken cancellationToken)
+    public async Task<GetObjectsSuffixesResponse> Handle(GetObjectsQuery query, CancellationToken cancellationToken)
     {
-        var getObjectsTasks = objectByParentPrefixRepository.GetAll(Guid.Parse(query.Request.BucketId), query.Request.Prefix);
+        PrefixType? cursorType = query.Request.Cursor?.Type is null ? null : Enum.Parse<PrefixType>(query.Request.Cursor.Type);
+        var cursorSuffix = query.Request.Cursor?.Suffix; 
         
-        var getFoldersTask = folderPrefixByParentPrefixRepository.GetAll(Guid.Parse(query.Request.BucketId), query.Request.Prefix);
+        var cursor = query.Request.Cursor is null ? null : new ObjectSuffixesPage.ObjectSuffixesPageCursor(cursorType, cursorSuffix);
         
-        await Task.WhenAll(getObjectsTasks, getFoldersTask);
-        
-        return ObjectResponseMappers.FormatGetBucketResponse(await getObjectsTasks, await getFoldersTask);
+        var page = await objectSuffixByParentPrefixRepository
+            .GetPage(Guid.Parse(query.Request.BucketId), query.Request.Prefix, query.Request.PageSize, cursor);
+
+        return ObjectResponseMappers.FormatObjectSuffixes(page);
     }
 }
