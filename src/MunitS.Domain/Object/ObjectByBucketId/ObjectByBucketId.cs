@@ -14,9 +14,13 @@ public class ObjectByBucketId
     public required DateTimeOffset InitiatedAt { get; init; }
     public required string UploadStatus { get; init; }
     public required string Extension { get; init; }
+    public required Dictionary<string, string> CustomMetadata { get; init; }
+    public required Dictionary<string, string> Tags { get; init; }
+    public required long SizeInBytes { get; init; }
+    public required string MimeType { get; init; }
 
     public static ObjectByBucketId Create(Guid bucketId, Guid divisionId, string fileKey, string fileName,
-        DateTimeOffset initiatedAt, DivisionType.SizeType divisionSizeType, string extension)
+        DateTimeOffset initiatedAt, DivisionType.SizeType divisionSizeType, string extension, string mimeType, long sizeInBytes)
     {
         return new ObjectByBucketId
         {
@@ -29,7 +33,11 @@ public class ObjectByBucketId
             UploadId = Guid.NewGuid(),
             DivisionSizeType = divisionSizeType.ToString(),
             UploadStatus = Object.ObjectByBucketId.UploadStatus.Instantiated.ToString(),
-            Extension = extension
+            Extension = extension,
+            MimeType = mimeType,
+            SizeInBytes = sizeInBytes,
+            CustomMetadata = new Dictionary<string, string>(),
+            Tags = new Dictionary<string, string>()
         };
     }
 }

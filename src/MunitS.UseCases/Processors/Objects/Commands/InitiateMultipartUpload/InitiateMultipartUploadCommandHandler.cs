@@ -3,7 +3,6 @@ using MediatR;
 using MunitS.Domain.Directory;
 using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Division.DivisionByBucketId;
-using MunitS.Domain.Metadata.MedataByObjectId;
 using MunitS.Domain.Object.ObjectByBucketId;
 using MunitS.Domain.Object.ObjectByFileKey;
 using MunitS.Domain.Rules;
@@ -14,7 +13,6 @@ using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services.DivisionBuilder;
-using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Service.ObjectSuffixesRetriever;
 using MunitS.UseCases.Processors.Service.PathRetriever;
@@ -27,8 +25,8 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
     IDivisionByIdRepository divisionByIdRepository,
     IDivisionBuilder divisionBuilder,
     IDivisionCounterRepository divisionCounterRepository,
-    IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository,
-    IMetadataBuilder metadataBuilder) : IRequestHandler<InitiateMultipartUploadCommand, InitiateMultipartUploadResponse>
+    IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository)
+    : IRequestHandler<InitiateMultipartUploadCommand, InitiateMultipartUploadResponse>
 {
     public async Task<InitiateMultipartUploadResponse> Handle(InitiateMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -70,27 +68,27 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
         var divisionSizeType = Enum.Parse<DivisionType.SizeType>(division.Type);
 
         var objectByBucketId = ObjectByBucketId.Create(bucket.Id, division.Id, command.Request.FileKey,
-            fileName, initiatedAt, divisionSizeType, FileKeyRule.GetExtension(command.Request.FileKey));
+            fileName, initiatedAt, divisionSizeType, FileKeyRule.GetExtension(command.Request.FileKey), command.Request.MimeType, command.Request.SizeInBytes);
         var objectByFileKey = ObjectByFileKey.Create(bucket.Id, objectByBucketId.Id, objectByBucketId.UploadId, command.Request.FileKey);
-        var metadataByObjectId = MetadataByObjectId.Create(bucket.Id, objectByBucketId.UploadId, objectByBucketId.Id, command.Request.MimeType, command.Request.SizeInBytes);
 
         var objectDirectories = new ObjectVersionDirectories(bucket.Name, objectByBucketId);
 
         var absoluteObjectVersionedTempDirectory = pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory);
-        Directory.CreateDirectory(absoluteObjectVersionedTempDirectory);
+
+        if (!Directory.Exists(absoluteObjectVersionedTempDirectory))
+        {
+            Directory.CreateDirectory(absoluteObjectVersionedTempDirectory);
+        }
 
         List<Task> tasks =
         [
             objectsBuilder
                 .ToInsert(objectByBucketId)
                 .ToInsert(objectByFileKey)
-                .Build(),
-            metadataBuilder
-                .ToInsert(metadataByObjectId)
                 .Build()
         ];
 
-        var prefixes = ObjectSuffixesRetriever.GetFolderPrefixes(bucket.Id, command.Request.FileKey, objectByBucketId.Id);
+        var prefixes = ObjectSuffixesRetriever.GetObjectSuffixes(bucket.Id, command.Request.FileKey, objectByBucketId.Id, command.Request.MimeType);
 
         tasks.AddRange(prefixes.Select(objectSuffixByParentPrefixRepository.Create));
 

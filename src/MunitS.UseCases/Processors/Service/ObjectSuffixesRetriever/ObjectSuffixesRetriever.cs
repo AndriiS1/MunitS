@@ -3,7 +3,7 @@ namespace MunitS.UseCases.Processors.Service.ObjectSuffixesRetriever;
 
 public static class ObjectSuffixesRetriever
 {
-    public static List<ObjectSuffixByParentPrefix> GetFolderPrefixes(Guid bucketId, string fileKey, Guid objectId)
+    public static List<ObjectSuffixByParentPrefix> GetObjectSuffixes(Guid bucketId, string fileKey, Guid objectId, string mimeType)
     {
         var trimmedFileKey =  fileKey.Trim('/');
         var split = trimmedFileKey.Split("/");
@@ -22,7 +22,7 @@ public static class ObjectSuffixesRetriever
 
         var objectParentPrefix = folderPrefixes.Count > 0 ? folderPrefixes.Last().ParentPrefix + folderPrefixes.Last().Suffix + "/" : "/";
 
-        var objectPrefix = ObjectSuffixByParentPrefix.Create(bucketId, objectId, objectParentPrefix, fileName, PrefixType.Object);
+        var objectPrefix = ObjectSuffixByParentPrefix.Create(bucketId, objectId, objectParentPrefix, fileName, PrefixType.Object, mimeType);
         folderPrefixes.Add(objectPrefix);
 
         return folderPrefixes;

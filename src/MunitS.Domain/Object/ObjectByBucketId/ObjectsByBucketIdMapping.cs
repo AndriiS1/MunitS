@@ -20,6 +20,10 @@ public class ObjectsByBucketIdMapping : Mappings
             .Column(c => c.UploadedAt, cm => cm.WithName("uploaded_at"))
             .Column(c => c.Extension, cm => cm.WithName("extension"))
             .Column(c => c.UploadStatus, cm => cm.WithName("upload_status"))
-            .Column(c => c.DivisionSizeType, cm => cm.WithName("division_size_type"));
+            .Column(c => c.DivisionSizeType, cm => cm.WithName("division_size_type"))
+            .Column(c => c.MimeType, cm => cm.WithName("mime_type"))
+            .Column(c => c.SizeInBytes, cm => cm.WithName("size_in_bytes"))
+            .Column(c => c.CustomMetadata, cm => cm.WithName("custom_metadata"))
+            .Column(c => c.Tags, cm => cm.WithName("tags"));
     }
 }

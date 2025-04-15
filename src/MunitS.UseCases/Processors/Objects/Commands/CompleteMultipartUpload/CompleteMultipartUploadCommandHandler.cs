@@ -8,10 +8,8 @@ using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
-using MunitS.Infrastructure.Data.Repositories.Metadata;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
-using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Service.PathRetriever;
@@ -20,12 +18,10 @@ namespace MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
 public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository objectByBucketIdRepository,
     IBucketByIdRepository bucketByIdRepository,
     IPathRetriever pathRetriever,
-    IMetadataByObjectIdRepository metadataByObjectIdRepository,
     IPartByUploadIdRepository partByUploadIdRepository,
     IDivisionCounterRepository divisionCounterRepository,
     IBucketCounterRepository bucketCounterRepository,
-    IObjectByFileKeyRepository objectByFileKeyRepository,
-    IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
+    IObjectByFileKeyRepository objectByFileKeyRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CompleteMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -40,13 +36,6 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
         if (objectToComplete is null)
         {
             throw new RpcException(new Status(StatusCode.NotFound, "There is no instantiated object."));
-        }
-
-        var metadata = await metadataByObjectIdRepository.Get(bucket.Id, uploadId);
-
-        if (metadata is null)
-        {
-            throw new RpcException(new Status(StatusCode.NotFound, "Cannot find metadata for object version."));
         }
 
         if (objectToComplete.UploadStatus == UploadStatus.Completed.ToString())
@@ -81,14 +70,26 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
             objectByFileKeyRepository.UpdateUploadStatus(bucket.Id, objectToComplete.FileKey, uploadId, UploadStatus.Completed),
             partByUploadIdRepository.Delete(bucket.Id, uploadId),
             bucketCounterRepository.IncrementObjectsCount(bucket.Id),
-            bucketCounterRepository.IncrementSizeInBytesCount(bucket.Id, metadata.SizeInBytes),
+            bucketCounterRepository.IncrementSizeInBytesCount(bucket.Id, objectToComplete.SizeInBytes),
             divisionCounterRepository.IncrementObjectsCount(bucket.Id, Enum.Parse<DivisionType.SizeType>(objectToComplete.DivisionSizeType), objectToComplete.DivisionId)
         ];
 
         await Task.WhenAll(tasks);
-
+        
         Directory.Delete(pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory), true);
+        
+        var objectVersions = await objectByFileKeyRepository.GetAll(bucket.Id, objectToComplete.FileKey);
 
+        if (bucket.VersioningEnabled)
+        {
+            if (objectVersions.Count > bucket.VersionsLimit)
+            {
+                var oldestObject = objectVersions.OrderByDescending(v => v.UploadedAt).First();
+                
+                
+            }
+        }
+        
         return new ObjectServiceStatusResponse
         {
             Status = "Success"

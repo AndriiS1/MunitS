@@ -1,4 +1,3 @@
-using MunitS.Domain.Object.ObjectByBucketId;
 namespace MunitS.Domain.Object.ObjectByFileKey;
 
 public class ObjectByFileKey
@@ -8,6 +7,7 @@ public class ObjectByFileKey
     public required Guid UploadId { get; init; }
     public required string FileKey { get; init; }
     public required string UploadStatus { get; init; }
+    public DateTimeOffset? UploadedAt { get; init; }
 
     public static ObjectByFileKey Create(Guid bucketId, Guid objectId, Guid uploadId, string fileKey)
     {

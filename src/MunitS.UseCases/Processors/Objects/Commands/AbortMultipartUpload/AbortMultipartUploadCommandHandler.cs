@@ -6,7 +6,6 @@ using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
-using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.AbortMultipartUpload;
@@ -16,8 +15,8 @@ public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository obje
     IBucketByIdRepository bucketByIdRepository,
     IObjectsBuilder objectsBuilder,
     IPathRetriever pathRetriever,
-    IPartByUploadIdRepository partByUploadIdRepository,
-    IMetadataBuilder metadataBuilder) : IRequestHandler<AbortMultipartUploadCommand, ObjectServiceStatusResponse>
+    IPartByUploadIdRepository partByUploadIdRepository)
+    : IRequestHandler<AbortMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(AbortMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -43,8 +42,6 @@ public class AbortMultipartUploadCommandHandler(IObjectByBucketIdRepository obje
         await Task.WhenAll(objectsBuilder
             .ToDelete(new ObjectsBuilder.DeleteObjectByBucketId(bucket.Id, objectToAbort.UploadId))
             .ToDelete(new ObjectsBuilder.DeleteObjectByFileKey(bucket.Id, objectToAbort.FileKey, objectToAbort.UploadId))
-            .Build(), metadataBuilder
-            .ToDelete(new MetadataBuilder.DeleteMetadataByObjectId(bucket.Id, objectToAbort.UploadId))
             .Build(), partByUploadIdRepository.Delete(bucket.Id, objectToAbort.UploadId));
 
         return new ObjectServiceStatusResponse

@@ -56,18 +56,6 @@ CREATE TABLE object_suffixes_by_parent_prefix (
     PRIMARY KEY ((bucket_id), parent_prefix, type, suffix)
 );
 
-DROP TABLE IF EXISTS metadata_by_object_id;
-CREATE TABLE metadata_by_object_id (
-    bucket_id UUID,
-    upload_id UUID,
-    object_id UUID,
-    mime_type TEXT,
-    size_in_bytes BIGINT,
-    custom_metadata MAP<TEXT, TEXT>,
-    tags MAP<TEXT, TEXT>,
-    PRIMARY KEY ((bucket_id), upload_id)
-);
-
 DROP TABLE IF EXISTS objects_by_bucket_id;
 CREATE TABLE objects_by_bucket_id (
     id UUID,
@@ -81,6 +69,10 @@ CREATE TABLE objects_by_bucket_id (
     initiated_at TIMESTAMP,
     upload_status TEXT,
     extension TEXT,
+    mime_type TEXT,
+    size_in_bytes BIGINT,
+    custom_metadata MAP<TEXT, TEXT>,
+    tags MAP<TEXT, TEXT>,
     PRIMARY KEY ((bucket_id), upload_id)
 );
 

@@ -43,15 +43,24 @@ public class ObjectSuffixByParentPrefixRepository(CassandraConnector connector) 
                 : null
         };
     }
-
-
-    public async Task Delete(Guid bucketId, string parentPrefix, string prefix)
+    
+    public async Task Delete(Guid bucketId, string parentPrefix, string suffix)
     {
-        await _buckets.Where(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId && o.Suffix == prefix).Delete().ExecuteAsync();
+        await _buckets.Where(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId && o.Suffix == suffix).Delete().ExecuteAsync();
+    }
+    
+    public  async Task Delete(Guid bucketId, string parentPrefix)
+    {
+        await _buckets.Where(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId).Delete().ExecuteAsync();
     }
 
     public async Task Create(ObjectSuffixByParentPrefix objectSuffixByParentPrefix)
     {
         await _buckets.Insert(objectSuffixByParentPrefix).ExecuteAsync();
+    }
+    
+    public async Task<ObjectSuffixByParentPrefix?> Any(Guid bucketId, string parentPrefix)
+    {
+       return await _buckets.FirstOrDefault(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId).ExecuteAsync();
     }
 }

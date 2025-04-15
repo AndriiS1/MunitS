@@ -14,6 +14,7 @@ public class ObjectsByFileKeyMapping : Mappings
             .Column(c => c.BucketId, cm => cm.WithName("bucket_id"))
             .Column(c => c.UploadStatus, cm => cm.WithName("upload_status"))
             .Column(c => c.UploadId, cm => cm.WithName("upload_id"))
+            .Column(c => c.UploadedAt, cm => cm.WithName("uploaded_at"))
             .Column(c => c.FileKey, cm => cm.WithName("file_key"));
     }
 }

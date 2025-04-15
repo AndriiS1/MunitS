@@ -6,7 +6,6 @@ using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Services.DivisionBuilder;
-using MunitS.UseCases.Processors.Objects.Services.MetadataBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.Delete;
@@ -17,8 +16,7 @@ public class DeleteObjectCommandHandler(IObjectsBuilder objectsBuilder,
     IObjectByBucketIdRepository objectByBucketIdRepository,
     IPathRetriever pathRetriever,
     IDivisionByIdRepository divisionByIdRepository,
-    IDivisionBuilder divisionBuilder,
-    IMetadataBuilder metadataBuilder) : IRequestHandler<DeleteObjectCommand, InitiateMultipartUploadResponse>
+    IDivisionBuilder divisionBuilder) : IRequestHandler<DeleteObjectCommand, InitiateMultipartUploadResponse>
 {
     public async Task<InitiateMultipartUploadResponse> Handle(DeleteObjectCommand command, CancellationToken cancellationToken)
     {
