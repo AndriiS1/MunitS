@@ -6,16 +6,14 @@ using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Mappers;
 namespace MunitS.UseCases.Processors.Objects.Queries.GetObjects;
 
-public class UploadFileCommandHandler(IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository) 
+public class UploadFileCommandHandler(IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository)
     : IRequestHandler<GetObjectsQuery, GetObjectsSuffixesResponse>
 {
     public async Task<GetObjectsSuffixesResponse> Handle(GetObjectsQuery query, CancellationToken cancellationToken)
     {
-        PrefixType? cursorType = query.Request.Cursor?.Type is null ? null : Enum.Parse<PrefixType>(query.Request.Cursor.Type);
-        var cursorSuffix = query.Request.Cursor?.Suffix; 
-        
-        var cursor = query.Request.Cursor is null ? null : new ObjectSuffixesPage.ObjectSuffixesPageCursor(cursorType, cursorSuffix);
-        
+        var cursor = query.Request.Cursor is null ? new ObjectSuffixesPage.ObjectSuffixesPageCursor(PrefixType.Directory, string.Empty) :
+            new ObjectSuffixesPage.ObjectSuffixesPageCursor(Enum.Parse<PrefixType>(query.Request.Cursor.Type), query.Request.Cursor.Suffix);
+
         var page = await objectSuffixByParentPrefixRepository
             .GetPage(Guid.Parse(query.Request.BucketId), query.Request.Prefix, query.Request.PageSize, cursor);
 

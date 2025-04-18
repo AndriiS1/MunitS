@@ -3,8 +3,9 @@ namespace MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByPar
 
 public class ObjectSuffixesPage
 {
-    public record ObjectSuffixesPageCursor(PrefixType? Type, string? Suffix);
     public List<ObjectSuffixByParentPrefix> Data { get; init; } = [];
     public ObjectSuffixesPageCursor? NextCursor { get; init; }
     public bool HasNext { get; init; }
+
+    public record ObjectSuffixesPageCursor(PrefixType Type, string Suffix);
 }

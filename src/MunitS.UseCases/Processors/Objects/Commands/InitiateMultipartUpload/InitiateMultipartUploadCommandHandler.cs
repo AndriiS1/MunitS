@@ -56,17 +56,18 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
                 .Build();
         }
 
-        var tryGetObjectWithFileKey = await objectByFileKeyRepository.Get(bucket.Id, command.Request.FileKey);
+        var fileKey = command.Request.FileKey.TrimStart('/');
+        var tryGetObjectWithFileKey = await objectByFileKeyRepository.Get(bucket.Id, fileKey);
 
         var objectId = tryGetObjectWithFileKey?.Id ?? Guid.NewGuid();
 
-        var fileName = FileKeyRule.GetFileName(command.Request.FileKey);
+        var fileName = FileKeyRule.GetFileName(fileKey);
         var initiatedAt = DateTimeOffset.UtcNow;
         var divisionSizeType = Enum.Parse<DivisionType.SizeType>(division.Type);
 
-        var objectByBucketId = ObjectByUploadId.Create(bucket.Id, division.Id, objectId, command.Request.FileKey,
-            fileName, initiatedAt, divisionSizeType, FileKeyRule.GetExtension(command.Request.FileKey), command.Request.MimeType, command.Request.SizeInBytes);
-        var objectByFileKey = ObjectByFileKey.Create(bucket.Id, objectId, command.Request.FileKey);
+        var objectByBucketId = ObjectByUploadId.Create(bucket.Id, division.Id, objectId, fileKey,
+            fileName, initiatedAt, divisionSizeType, FileKeyRule.GetExtension(fileKey), command.Request.MimeType, command.Request.SizeInBytes);
+        var objectByFileKey = ObjectByFileKey.Create(bucket.Id, objectId, fileKey);
 
         var objectDirectories = new ObjectVersionDirectories(bucket.Name, objectByBucketId);
 
@@ -85,7 +86,7 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
                 .Build()
         ];
 
-        var prefixes = ObjectSuffixesRetriever.GetObjectSuffixes(bucket.Id, command.Request.FileKey, objectId, command.Request.MimeType);
+        var prefixes = ObjectSuffixesRetriever.GetObjectSuffixes(bucket.Id, fileKey, objectId, command.Request.MimeType);
 
         tasks.AddRange(prefixes.Select(objectSuffixByParentPrefixRepository.Create));
 
