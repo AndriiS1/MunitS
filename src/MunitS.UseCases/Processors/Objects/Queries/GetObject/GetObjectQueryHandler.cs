@@ -18,14 +18,16 @@ public class UploadFileCommandHandler(IBucketByNameRepository bucketByNameReposi
 
         if (bucket == null) throw new RpcException(new Status(StatusCode.NotFound, $"Bucket with name: {query.Request.BucketName} is not found."));
 
-        var objectByFileKey = await objectByFileKeyRepository.Get(bucket.Id, query.Request.FileKey);
+        var objectVersions = await objectByUploadIdRepository.GetAll(bucket.Id, Guid.Parse(query.Request.ObjectId));
+        
+        if(objectVersions.Count == 0) throw new RpcException(new Status(StatusCode.NotFound, $"Any version of object with id: {query.Request.ObjectId} is not found."));
+        
+        var objectByFileKey = await objectByFileKeyRepository.Get(bucket.Id, objectVersions.First().FileKey);
 
         if (objectByFileKey == null)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, $"Object with file key: {query.Request.FileKey} is not found."));
+            throw new RpcException(new Status(StatusCode.NotFound, $"Object with file key: {objectVersions.First().FileKey} is not found."));
         }
-
-        var objectVersions = await objectByUploadIdRepository.GetAll(bucket.Id, objectByFileKey.Id);
 
         return ObjectResponseMappers.FormatObjectResponse(objectByFileKey, objectVersions);
     }

@@ -15,7 +15,7 @@ public static class ObjectResponseMappers
             Suffix = @object.Suffix,
             Type = @object.Type,
             MimeType = @object.MimeType ?? "-",
-            CreatedAt = @object.CreatedAt.ToString()
+            CreatedAt = @object.CreatedAt.ToString("O")
         };
     }
 
@@ -57,7 +57,7 @@ public static class ObjectResponseMappers
             UploadId = objectByUploadId.UploadId.ToString(),
             UploadStatus = objectByUploadId.UploadStatus,
             SizeInBytes = objectByUploadId.SizeInBytes,
-            InitiatedAt = objectByUploadId.InitiatedAt.ToString(),
+            InitiatedAt = objectByUploadId.InitiatedAt.ToString("O"),
             MimeType = objectByUploadId.MimeType
         };
 
@@ -79,7 +79,7 @@ public static class ObjectResponseMappers
         var response = new GetObjectResponse
         {
             Id = objectByFileKey.Id.ToString(),
-            CreatedAt = objectByFileKey.CreatedAt.ToString(),
+            CreatedAt = objectByFileKey.CreatedAt.ToString("O"),
             FileKey = objectByFileKey.FileKey
         };
 

@@ -104,7 +104,7 @@ message ObjectSuffixResponse {
 
 message GetObjectRequest {
   string bucketName = 1;
-  string fileKey = 2;
+  string objectId = 2;
 }
 
 message GetObjectResponse {
