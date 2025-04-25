@@ -38,7 +38,7 @@ public class CompleteMultipartUploadCommandHandler(IObjectByUploadIdRepository o
             throw new RpcException(new Status(StatusCode.NotFound, "There is no instantiated object."));
         }
 
-        if (objectToComplete.UploadStatus == UploadStatus.Completed.ToString())
+        if (objectToComplete.UploadStatus == nameof(UploadStatus.Completed))
         {
             throw new RpcException(new Status(StatusCode.Aborted, "Object upload is already completed."));
         }
