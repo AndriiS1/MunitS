@@ -19,8 +19,8 @@ public class BucketsServiceProcessor(IMediator mediator) : BucketsService.Bucket
     {
         return await mediator.Send(new DeleteBucketCommand(request));
     }
-    
-    public override async Task<GetBucketResponse> GetBucket(GetBucketRequest request, ServerCallContext context)
+
+    public override async Task<BucketResponse> GetBucket(GetBucketRequest request, ServerCallContext context)
     {
         return await mediator.Send(new GetBucketQuery(request));
     }
@@ -35,4 +35,3 @@ public class BucketsServiceProcessor(IMediator mediator) : BucketsService.Bucket
         return await mediator.Send(new GetBucketsQuery(request));
     }
 }
-

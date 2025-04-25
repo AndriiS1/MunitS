@@ -1,17 +1,15 @@
 using MunitS.Domain.Division.DivisionByBucketId;
-using MunitS.Domain.Object.ObjectByBucketId;
+using MunitS.Domain.Object.ObjectByUploadId;
 namespace MunitS.Domain.Directory.Dtos;
 
 public class ObjectVersionDirectories
 {
-    public ObjectVersionDirectories(string bucketName, ObjectByBucketId objectByBucketId)
+    public ObjectVersionDirectories(string bucketName, ObjectByUploadId objectByUploadId)
     {
-        var divisionSizeType = Enum.Parse<DivisionType.SizeType>(objectByBucketId.DivisionSizeType);
-
         BucketDirectory = new BucketDirectory(bucketName);
-        DivisionDirectory = new DivisionDirectory(bucketName, objectByBucketId.DivisionId, divisionSizeType);
-        ObjectDirectory = new ObjectDirectory(DivisionDirectory, objectByBucketId.Id);
-        ObjectVersionDirectory = new ObjectVersionDirectory(ObjectDirectory, objectByBucketId.UploadId);
+        DivisionDirectory = new DivisionDirectory(bucketName, objectByUploadId.DivisionId, Enum.Parse<DivisionType.SizeType>(objectByUploadId.DivisionSizeType));
+        ObjectDirectory = new ObjectDirectory(DivisionDirectory, objectByUploadId.Id);
+        ObjectVersionDirectory = new ObjectVersionDirectory(ObjectDirectory, objectByUploadId.UploadId);
         TempObjectVersionDirectory = new TempObjectVersionDirectory(ObjectVersionDirectory);
     }
 

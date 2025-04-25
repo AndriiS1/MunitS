@@ -8,9 +8,9 @@ using MunitS.UseCases.Processors.Buckets.Mappers;
 namespace MunitS.UseCases.Processors.Buckets.Queries.GetBucket;
 
 public class UploadFileCommandHandler(IBucketByIdRepository bucketByIdRepository,
-    IBucketCounterRepository bucketCounterRepository) : IRequestHandler<GetBucketQuery, GetBucketResponse>
+    IBucketCounterRepository bucketCounterRepository) : IRequestHandler<GetBucketQuery, BucketResponse>
 {
-    public async Task<GetBucketResponse> Handle(GetBucketQuery query, CancellationToken cancellationToken)
+    public async Task<BucketResponse> Handle(GetBucketQuery query, CancellationToken cancellationToken)
     {
         var bucket = await bucketByIdRepository.Get(new Guid(query.Request.Id));
 
@@ -23,6 +23,6 @@ public class UploadFileCommandHandler(IBucketByIdRepository bucketByIdRepository
 
         var bucketCounter = await bucketCounterRepository.Get(bucket.Id);
 
-        return ResponseMappers.FormatGetBucketResponse(bucket, bucketCounter ?? BucketCounter.Empty(bucket.Id));
+        return ResponseMappers.FormatBucketResponse(bucket, bucketCounter ?? BucketCounter.Empty(bucket.Id));
     }
 }

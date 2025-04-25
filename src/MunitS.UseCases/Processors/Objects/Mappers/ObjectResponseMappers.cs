@@ -1,40 +1,89 @@
-using MunitS.Domain.FolderPrefixes.FolderPrefixByParentPrefix;
-using MunitS.Domain.Object.ObjectByParentPrefix;
+using MunitS.Domain.Object.ObjectByFileKey;
+using MunitS.Domain.Object.ObjectByUploadId;
+using MunitS.Domain.ObjectSuffix.ObjectSuffixByParentPrefix;
+using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository.Dtos;
 using MunitS.Protos;
 namespace MunitS.UseCases.Processors.Objects.Mappers;
 
 public static class ObjectResponseMappers
 {
-    public static GetObjectsByPrefixResponse FormatGetBucketResponse(List<ObjectByParentPrefix> objects, List<FolderPrefixByParentPrefix> folders)
+    private static ObjectSuffixResponse FormatObjectSuffixesResponse(ObjectSuffixByParentPrefix @object)
     {
-        return new GetObjectsByPrefixResponse
-        {
-            Content = FormatObjectsResponse(objects, folders)
-        };
-    }
-    private static ObjectByPrefixResponse FormatObjectByPrefixResponse(ObjectByParentPrefix @object)
-    {
-        return new ObjectByPrefixResponse
+        return new ObjectSuffixResponse
         {
             Id = @object.Id.ToString(),
-            FileName = @object.FileName,
-            UploadedAt = @object.UploadedAt.ToString()
+            Suffix = @object.Suffix,
+            Type = @object.Type,
+            MimeType = @object.MimeType ?? "-",
+            CreatedAt = @object.CreatedAt.ToString("O")
         };
     }
 
-    private static FolderByPrefixResponse FormatFolderByPrefixResponse(FolderPrefixByParentPrefix folder)
+    private static ObjectSuffixesResponse GetObjectSuffixesResponse(ObjectSuffixesPage page)
     {
-        return new FolderByPrefixResponse
+        var response = new ObjectSuffixesResponse
         {
-            Prefix = folder.Prefix
+            HasNext = page.HasNext
         };
+
+        response.ObjectSuffixes.AddRange(page.Data.Select(FormatObjectSuffixesResponse));
+
+        if (page.NextCursor != null)
+        {
+            response.NextCursor = new ObjectSuffixesCursor
+            {
+                Suffix = page.NextCursor.Suffix,
+                Type = page.NextCursor?.Type.ToString()
+            };
+        }
+
+        return response;
     }
 
-    private static ObjectsResponse FormatObjectsResponse(List<ObjectByParentPrefix> objects, List<FolderPrefixByParentPrefix> folders)
+    public static GetObjectsSuffixesResponse FormatObjectSuffixes(ObjectSuffixesPage page)
     {
-        var response = new ObjectsResponse();
-        response.Objects.AddRange(objects.Select(FormatObjectByPrefixResponse));
-        response.Folders.AddRange(folders.Select(FormatFolderByPrefixResponse));
+        var response = new GetObjectsSuffixesResponse
+        {
+            Suffixes = GetObjectSuffixesResponse(page)
+        };
+
+        return response;
+    }
+
+    private static ObjectVersionResponse FormatGetObjectResponse(ObjectByUploadId objectByUploadId)
+    {
+        var response = new ObjectVersionResponse
+        {
+            UploadId = objectByUploadId.UploadId.ToString(),
+            UploadStatus = objectByUploadId.UploadStatus,
+            SizeInBytes = objectByUploadId.SizeInBytes,
+            InitiatedAt = objectByUploadId.InitiatedAt.ToString("O"),
+            MimeType = objectByUploadId.MimeType
+        };
+
+        foreach (var metadata in objectByUploadId.CustomMetadata)
+        {
+            response.CustomMetadata.Add(metadata.Key, metadata.Value);
+        }
+
+        foreach (var tag in objectByUploadId.Tags)
+        {
+            response.CustomMetadata.Add(tag.Key, tag.Value);
+        }
+
+        return response;
+    }
+
+    public static GetObjectResponse FormatObjectResponse(ObjectByFileKey objectByFileKey, List<ObjectByUploadId> objectByUploadIds)
+    {
+        var response = new GetObjectResponse
+        {
+            Id = objectByFileKey.Id.ToString(),
+            CreatedAt = objectByFileKey.CreatedAt.ToString("O"),
+            FileKey = objectByFileKey.FileKey
+        };
+
+        response.Versions.Add(objectByUploadIds.Select(FormatGetObjectResponse));
 
         return response;
     }

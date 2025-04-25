@@ -11,7 +11,8 @@ service ObjectsService {
   rpc CompleteMultipartUpload(CompleteMultipartUploadRequest) returns (ObjectServiceStatusResponse);
   
   rpc DeleteObject(DeleteObjectRequest) returns (ObjectServiceStatusResponse);
-  rpc GetObjectByPrefix(GetObjectByPrefixRequest) returns (GetObjectsByPrefixResponse);
+  rpc GetObject(GetObjectRequest) returns (GetObjectResponse);
+  rpc GetObjectsByPrefix(GetObjectByPrefixRequest) returns (GetObjectsSuffixesResponse);
 }
 
 // Initiate multipart upload
@@ -23,20 +24,23 @@ message InitiateMultipartUploadRequest {
 }
 
 message InitiateMultipartUploadResponse {
-  string uploadId = 1;
+  string objectId = 1;
+  string uploadId = 2;
 }
 
 // AbortMultipartUpload
 message AbortMultipartUploadRequest {
   string bucketId = 1;
-  string uploadId = 2;
+  string objectId = 2;
+  string uploadId = 3;
 }
 
 // GetMultipartUploadUrls
 message GetPartUploadUrlRequest {
   string bucketId = 1;
-  string uploadId = 2;
-  int32 partNumber = 3;
+  string objectId = 2;
+  string uploadId = 3;
+  int32 partNumber = 4;
 }
 
 message GetPartUploadUrlResponse {
@@ -46,8 +50,9 @@ message GetPartUploadUrlResponse {
 // CompleteMultipartUpload
 message CompleteMultipartUploadRequest {
   string bucketId = 1;
-  string uploadId = 2;
-  map<int32, string> eTags = 3;
+  string objectId = 2;
+  string uploadId = 3;
+  map<int32, string> eTags = 4;
 }
 
 // Delete object
@@ -67,25 +72,54 @@ message GetObjectByPrefixRequest {
   string status = 1;
   string bucketId = 2;
   string prefix = 3;
+  int32 pageSize = 4;
+  ObjectSuffixesCursor cursor = 5;
 }
 
-message GetObjectsByPrefixResponse {
-  string status = 1;
-  ObjectsResponse content = 2;
+message ObjectSuffixesCursor
+{
+  string Type = 1;
+  string Suffix = 2;
 }
 
-message ObjectsResponse {
-  repeated FolderByPrefixResponse Folders = 1;
-  repeated ObjectByPrefixResponse Objects = 2;
+message GetObjectsSuffixesResponse {
+  ObjectSuffixesResponse suffixes = 2;
 }
 
-message ObjectByPrefixResponse {
+message ObjectSuffixesResponse {
+  repeated ObjectSuffixResponse ObjectSuffixes = 1;
+  ObjectSuffixesCursor nextCursor = 2;
+  bool hasNext = 3;
+}
+
+message ObjectSuffixResponse {
   string id = 1;
-  string fileName = 2;
-  string uploadedAt = 3;
+  string suffix = 2;
+  string createdAt = 3;
+  string type = 4;
+  string mimeType = 5;
 }
 
-message FolderByPrefixResponse {
+// get object response
+
+message GetObjectRequest {
+  string bucketName = 1;
+  string objectId = 2;
+}
+
+message GetObjectResponse {
   string id = 1;
-  string prefix = 2;
+  string fileKey = 2;
+  string createdAt = 3;
+  repeated ObjectVersionResponse Versions = 4;
+}
+
+message ObjectVersionResponse {
+  string uploadId = 1;
+  string uploadStatus = 2;
+  map<string, string> CustomMetadata = 3;
+  string initiatedAt = 4;
+  int64 sizeInBytes = 5;
+  string mimeType = 6;
+  map<string, string> Tags = 7;
 }

@@ -12,8 +12,7 @@ public class ObjectsByFileKeyMapping : Mappings
             .PartitionKey(c => c.BucketId)
             .Column(c => c.Id, cm => cm.WithName("id"))
             .Column(c => c.BucketId, cm => cm.WithName("bucket_id"))
-            .Column(c => c.UploadStatus, cm => cm.WithName("upload_status"))
-            .Column(c => c.UploadId, cm => cm.WithName("upload_id"))
+            .Column(c => c.CreatedAt, cm => cm.WithName("created_at"))
             .Column(c => c.FileKey, cm => cm.WithName("file_key"));
     }
 }

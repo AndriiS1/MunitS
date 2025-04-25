@@ -4,19 +4,17 @@ public class ObjectByFileKey
 {
     public required Guid Id { get; init; }
     public required Guid BucketId { get; init; }
-    public required Guid UploadId { get; init; }
     public required string FileKey { get; init; }
-    public required string UploadStatus { get; init; }
+    public DateTimeOffset CreatedAt { get; private init; }
 
-    public static ObjectByFileKey Create(Guid bucketId, Guid objectId, Guid uploadId, string fileKey)
+    public static ObjectByFileKey Create(Guid bucketId, Guid objectId, string fileKey)
     {
         return new ObjectByFileKey
         {
             Id = objectId,
             BucketId = bucketId,
             FileKey = fileKey,
-            UploadId = uploadId,
-            UploadStatus = ObjectByBucketId.UploadStatus.Instantiated.ToString()
+            CreatedAt = DateTimeOffset.UtcNow
         };
     }
 }

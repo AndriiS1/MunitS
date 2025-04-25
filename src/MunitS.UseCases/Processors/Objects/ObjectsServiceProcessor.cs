@@ -4,6 +4,7 @@ using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Commands.AbortMultipartUpload;
 using MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
 using MunitS.UseCases.Processors.Objects.Commands.InitiateMultipartUpload;
+using MunitS.UseCases.Processors.Objects.Queries.GetObject;
 using MunitS.UseCases.Processors.Objects.Queries.GetObjects;
 using MunitS.UseCases.Processors.Objects.Queries.GetPartUploadUrl;
 namespace MunitS.UseCases.Processors.Objects;
@@ -30,8 +31,13 @@ public class ObjectsServiceProcessor(IMediator mediator) : ObjectsService.Object
         return await mediator.Send(new CompleteMultipartUploadCommand(request));
     }
 
-    public override async Task<GetObjectsByPrefixResponse> GetObjectByPrefix(GetObjectByPrefixRequest request, ServerCallContext context)
+    public override async Task<GetObjectsSuffixesResponse> GetObjectsByPrefix(GetObjectByPrefixRequest request, ServerCallContext context)
     {
         return await mediator.Send(new GetObjectsQuery(request));
+    }
+
+    public override async Task<GetObjectResponse> GetObject(GetObjectRequest request, ServerCallContext context)
+    {
+        return await mediator.Send(new GetObjectQuery(request));
     }
 }

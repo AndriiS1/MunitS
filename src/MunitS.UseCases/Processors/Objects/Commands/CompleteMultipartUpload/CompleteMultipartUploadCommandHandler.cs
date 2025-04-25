@@ -3,30 +3,25 @@ using MediatR;
 using MunitS.Domain.Directory;
 using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Division.DivisionByBucketId;
-using MunitS.Domain.Object.ObjectByBucketId;
+using MunitS.Domain.Object.ObjectByUploadId;
 using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
-using MunitS.Infrastructure.Data.Repositories.FolderPrefix.FolderPrefixByParentPrefixRepository;
-using MunitS.Infrastructure.Data.Repositories.Metadata;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByBucketIdRepository;
-using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
+using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
-using MunitS.UseCases.Processors.Service.ForlderPrefixesRetriever;
+using MunitS.UseCases.Processors.Objects.Services.ObjectDeletionService;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
 
-public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository objectByBucketIdRepository,
+public class CompleteMultipartUploadCommandHandler(IObjectByUploadIdRepository objectByUploadIdRepository,
     IBucketByIdRepository bucketByIdRepository,
     IPathRetriever pathRetriever,
-    IMetadataByObjectIdRepository metadataByObjectIdRepository,
     IPartByUploadIdRepository partByUploadIdRepository,
     IDivisionCounterRepository divisionCounterRepository,
     IBucketCounterRepository bucketCounterRepository,
-    IObjectByFileKeyRepository objectByFileKeyRepository,
-    IFolderPrefixByParentPrefixRepository folderPrefixByParentPrefixRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
+    IObjectDeletionService objectDeletionService) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CompleteMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -36,21 +31,14 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
 
         var uploadId = Guid.Parse(command.Request.UploadId);
 
-        var objectToComplete = await objectByBucketIdRepository.GetByUploadId(bucket.Id, uploadId);
+        var objectToComplete = await objectByUploadIdRepository.GetByUploadId(bucket.Id, Guid.Parse(command.Request.ObjectId), uploadId);
 
         if (objectToComplete is null)
         {
             throw new RpcException(new Status(StatusCode.NotFound, "There is no instantiated object."));
         }
 
-        var metadata = await metadataByObjectIdRepository.Get(bucket.Id, uploadId);
-
-        if (metadata is null)
-        {
-            throw new RpcException(new Status(StatusCode.NotFound, "Cannot find metadata for object version."));
-        }
-
-        if (Enum.Parse<UploadStatus>(objectToComplete.UploadStatus) == UploadStatus.Completed)
+        if (objectToComplete.UploadStatus == nameof(UploadStatus.Completed))
         {
             throw new RpcException(new Status(StatusCode.Aborted, "Object upload is already completed."));
         }
@@ -78,21 +66,42 @@ public class CompleteMultipartUploadCommandHandler(IObjectByBucketIdRepository o
 
         List<Task> tasks =
         [
-            objectByBucketIdRepository.UpdateUploadStatus(bucket.Id, uploadId, UploadStatus.Completed),
-            objectByFileKeyRepository.UpdateUploadStatus(bucket.Id, objectToComplete.FileKey, uploadId, UploadStatus.Completed),
+            objectByUploadIdRepository.UpdateUploadStatus(bucket.Id, Guid.Parse(command.Request.ObjectId), uploadId, UploadStatus.Completed),
             partByUploadIdRepository.Delete(bucket.Id, uploadId),
             bucketCounterRepository.IncrementObjectsCount(bucket.Id),
-            bucketCounterRepository.IncrementSizeInBytesCount(bucket.Id, metadata.SizeInBytes),
+            bucketCounterRepository.IncrementSizeInBytesCount(bucket.Id, objectToComplete.SizeInBytes),
             divisionCounterRepository.IncrementObjectsCount(bucket.Id, Enum.Parse<DivisionType.SizeType>(objectToComplete.DivisionSizeType), objectToComplete.DivisionId)
         ];
-
-        var prefixes = FolderPrefixesRetriever.GetFolderPrefixes(bucket.Id, objectToComplete.FileKey, objectToComplete.Id);
-
-        tasks.AddRange(prefixes.Select(folderPrefixByParentPrefixRepository.Create));
 
         await Task.WhenAll(tasks);
 
         Directory.Delete(pathRetriever.GetAbsoluteDirectoryPath(objectDirectories.TempObjectVersionDirectory), true);
+
+        var objectVersions = (await objectByUploadIdRepository.GetAll(bucket.Id, objectToComplete.Id))
+            .Where(o => o.UploadId != objectToComplete.UploadId)
+            .ToList();
+
+        if (objectVersions.Count == 0)
+        {
+            return new ObjectServiceStatusResponse
+            {
+                Status = "Success"
+            };
+        }
+
+        var oldestObject = objectVersions.OrderByDescending(v => v.UploadedAt).First();
+
+        if (bucket.VersioningEnabled)
+        {
+            if (objectVersions.Count >= bucket.VersionsLimit)
+            {
+                await objectDeletionService.DeleteOldestObjectVersion(bucket.Name, oldestObject);
+            }
+        }
+        else
+        {
+            await objectDeletionService.DeleteOldestObjectVersion(bucket.Name, oldestObject);
+        }
 
         return new ObjectServiceStatusResponse
         {

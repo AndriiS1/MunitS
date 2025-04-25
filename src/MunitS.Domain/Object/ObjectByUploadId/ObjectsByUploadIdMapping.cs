@@ -1,13 +1,13 @@
 using Cassandra.Mapping;
-namespace MunitS.Domain.Object.ObjectByBucketId;
+namespace MunitS.Domain.Object.ObjectByUploadId;
 
-public class ObjectsByBucketIdMapping : Mappings
+public class ObjectsByUploadIdMapping : Mappings
 {
-    private const string TableName = "objects_by_bucket_id";
+    private const string TableName = "objects_by_upload_id";
 
-    public ObjectsByBucketIdMapping()
+    public ObjectsByUploadIdMapping()
     {
-        For<ObjectByBucketId>()
+        For<ObjectByUploadId>()
             .TableName(TableName)
             .PartitionKey(c => c.BucketId)
             .Column(c => c.Id, cm => cm.WithName("id"))
@@ -20,6 +20,10 @@ public class ObjectsByBucketIdMapping : Mappings
             .Column(c => c.UploadedAt, cm => cm.WithName("uploaded_at"))
             .Column(c => c.Extension, cm => cm.WithName("extension"))
             .Column(c => c.UploadStatus, cm => cm.WithName("upload_status"))
-            .Column(c => c.DivisionSizeType, cm => cm.WithName("division_size_type"));
+            .Column(c => c.DivisionSizeType, cm => cm.WithName("division_size_type"))
+            .Column(c => c.MimeType, cm => cm.WithName("mime_type"))
+            .Column(c => c.SizeInBytes, cm => cm.WithName("size_in_bytes"))
+            .Column(c => c.CustomMetadata, cm => cm.WithName("custom_metadata"))
+            .Column(c => c.Tags, cm => cm.WithName("tags"));
     }
 }

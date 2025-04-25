@@ -44,28 +44,20 @@ CREATE TABLE divisions_by_bucket_id (
     PRIMARY KEY ((bucket_id, type), id)
 );
 
-DROP TABLE IF EXISTS folder_prefixes_by_parent_prefix;
-CREATE TABLE folder_prefixes_by_parent_prefix (
+DROP TABLE IF EXISTS object_suffixes_by_parent_prefix;
+CREATE TABLE object_suffixes_by_parent_prefix (
+    id UUID,
     bucket_id UUID,
     parent_prefix TEXT,
-    prefix TEXT,
-    PRIMARY KEY ((bucket_id), parent_prefix)
-);
-
-DROP TABLE IF EXISTS metadata_by_object_id;
-CREATE TABLE metadata_by_object_id (
-    bucket_id UUID,
-    upload_id UUID,
-    object_id UUID,
+    suffix TEXT,
     mime_type TEXT,
-    size_in_bytes BIGINT,
-    custom_metadata MAP<TEXT, TEXT>,
-    tags MAP<TEXT, TEXT>,
-    PRIMARY KEY ((bucket_id), upload_id)
+    created_at TIMESTAMP,
+    type TEXT,
+    PRIMARY KEY ((bucket_id), parent_prefix, type, suffix)
 );
 
-DROP TABLE IF EXISTS objects_by_bucket_id;
-CREATE TABLE objects_by_bucket_id (
+DROP TABLE IF EXISTS objects_by_upload_id;
+CREATE TABLE objects_by_upload_id (
     id UUID,
     bucket_id UUID,
     upload_id UUID,
@@ -77,29 +69,20 @@ CREATE TABLE objects_by_bucket_id (
     initiated_at TIMESTAMP,
     upload_status TEXT,
     extension TEXT,
-    PRIMARY KEY ((bucket_id), upload_id)
+    mime_type TEXT,
+    size_in_bytes BIGINT,
+    custom_metadata MAP<TEXT, TEXT>,
+    tags MAP<TEXT, TEXT>,
+    PRIMARY KEY ((bucket_id), id, upload_id)
 );
 
 DROP TABLE IF EXISTS objects_by_file_key;
 CREATE TABLE objects_by_file_key (
     id UUID,
     bucket_id UUID,
-    upload_id UUID,
     file_key TEXT,
-    upload_status TEXT,
-    PRIMARY KEY ((bucket_id), file_key, upload_id)
-);
-
-DROP TABLE IF EXISTS objects_by_parent_prefix;
-CREATE TABLE objects_by_parent_prefix (
-    id UUID,
-    bucket_id UUID,
-    file_name TEXT,
-    parent_prefix TEXT,
-    uploaded_at TIMESTAMP,
-    upload_id UUID,
-    initiated_at TIMESTAMP,
-    PRIMARY KEY ((bucket_id), parent_prefix, file_name)
+    created_at TIMESTAMP,
+    PRIMARY KEY ((bucket_id), file_key)
 );
 
 DROP TABLE IF EXISTS parts_by_upload_id;
