@@ -11,4 +11,5 @@ public interface IObjectSuffixByParentPrefixRepository
     Task Delete(Guid bucketId, string parentPrefix);
     public Task Create(ObjectSuffixByParentPrefix objectSuffixByParentPrefix);
     Task<ObjectSuffixByParentPrefix?> Any(Guid bucketId, string parentPrefix);
+    Task Delete(Guid bucketId);
 }

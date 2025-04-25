@@ -42,4 +42,9 @@ public class ObjectByUploadIdRepository(CassandraConnector connector) : IObjectB
     {
         await _objects.Insert(objectByUploadId).ExecuteAsync();
     }
+
+    public async Task Delete(Guid bucketId)
+    {
+        await _objects.Where(b => b.BucketId == bucketId).Delete().ExecuteAsync();
+    }
 }

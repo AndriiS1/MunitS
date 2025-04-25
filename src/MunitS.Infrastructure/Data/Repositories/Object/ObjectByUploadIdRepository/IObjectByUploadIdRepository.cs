@@ -9,4 +9,5 @@ public interface IObjectByUploadIdRepository
     Task Delete(Guid bucketId, Guid objectId, Guid uploadId);
     Task Create(ObjectByUploadId objectByUploadId);
     Task UpdateUploadStatus(Guid bucketId, Guid objectId, Guid uploadId, UploadStatus status);
+    Task Delete(Guid bucketId);
 }

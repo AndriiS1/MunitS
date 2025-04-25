@@ -11,6 +11,7 @@ service ObjectsService {
   rpc CompleteMultipartUpload(CompleteMultipartUploadRequest) returns (ObjectServiceStatusResponse);
   
   rpc DeleteObject(DeleteObjectRequest) returns (ObjectServiceStatusResponse);
+  rpc DeleteObjectVersion(DeleteObjectVersionRequest) returns (ObjectServiceStatusResponse);
   rpc GetObject(GetObjectRequest) returns (GetObjectResponse);
   rpc GetObjectsByPrefix(GetObjectByPrefixRequest) returns (GetObjectsSuffixesResponse);
 }
@@ -59,6 +60,13 @@ message CompleteMultipartUploadRequest {
 message DeleteObjectRequest {
   string bucketId = 1;
   string fileKey = 2;
+}
+
+// Delete object version
+message DeleteObjectVersionRequest {
+  string bucketId = 1;
+  string fileKey = 2;
+  string uploadId = 3;
 }
 
 // Status response

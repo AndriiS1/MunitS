@@ -34,7 +34,7 @@ public class ObjectDeletionService(IBucketCounterRepository bucketCounterReposit
         Directory.Delete(absoluteObjectVersionPath, true);
     }
 
-    private async Task DeleteObjectPrefixesRelations(Guid bucketId, string fileKey)
+    public async Task DeleteObjectPrefixesRelations(Guid bucketId, string fileKey)
     {
         var trimmedFileKey = fileKey.Trim('/');
         var split = trimmedFileKey.Split("/");

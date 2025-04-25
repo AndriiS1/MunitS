@@ -23,4 +23,9 @@ public class DivisionCounterRepository(CassandraConnector connector) : IDivision
         var bound = prepared.Bind(increment, bucketId, type.ToString(), id);
         await _divisions.GetSession().ExecuteAsync(bound).ConfigureAwait(false);
     }
+
+    public async Task Delete(Guid bucketId)
+    {
+        await _divisions.Where(b => b.BucketId == bucketId).Delete().ExecuteAsync();
+    }
 }

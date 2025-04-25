@@ -32,13 +32,12 @@ public class ObjectSuffixByParentPrefixRepository(CassandraConnector connector) 
         ObjectSuffixesPage.ObjectSuffixesPageCursor cursor)
     {
         const string queryString = """
-
-                                                       SELECT * FROM object_suffixes_by_parent_prefix 
-                                                       WHERE bucket_id = ? 
-                                                       AND parent_prefix = ? 
-                                                       AND (type, suffix) > (?, ?)
-                                                       ORDER BY type , suffix
-                                                       LIMIT ?
+                                       SELECT * FROM object_suffixes_by_parent_prefix 
+                                       WHERE bucket_id = ? 
+                                       AND parent_prefix = ? 
+                                       AND (type, suffix) > (?, ?)
+                                       ORDER BY type , suffix
+                                       LIMIT ?
                                    """;
 
         var cql = new Cql(queryString, bucketId, parentPrefix, cursor.Type.ToString(), cursor.Suffix, pageSize + 1);
@@ -64,5 +63,10 @@ public class ObjectSuffixByParentPrefixRepository(CassandraConnector connector) 
                 ? new ObjectSuffixesPage.ObjectSuffixesPageCursor(Enum.Parse<PrefixType>(lastItem.Type), lastItem.Suffix)
                 : null
         };
+    }
+    
+    public async Task Delete(Guid bucketId)
+    {
+        await _objects.Where(b => b.BucketId == bucketId).Delete().ExecuteAsync();
     }
 }
