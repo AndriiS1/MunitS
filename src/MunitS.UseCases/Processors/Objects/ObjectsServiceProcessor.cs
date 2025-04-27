@@ -3,6 +3,8 @@ using MediatR;
 using MunitS.Protos;
 using MunitS.UseCases.Processors.Objects.Commands.AbortMultipartUpload;
 using MunitS.UseCases.Processors.Objects.Commands.CompleteMultipartUpload;
+using MunitS.UseCases.Processors.Objects.Commands.Delete;
+using MunitS.UseCases.Processors.Objects.Commands.DeleteVersion;
 using MunitS.UseCases.Processors.Objects.Commands.InitiateMultipartUpload;
 using MunitS.UseCases.Processors.Objects.Queries.GetObject;
 using MunitS.UseCases.Processors.Objects.Queries.GetObjects;
@@ -39,5 +41,15 @@ public class ObjectsServiceProcessor(IMediator mediator) : ObjectsService.Object
     public override async Task<GetObjectResponse> GetObject(GetObjectRequest request, ServerCallContext context)
     {
         return await mediator.Send(new GetObjectQuery(request));
+    }
+
+    public override async Task<ObjectServiceStatusResponse> DeleteObject(DeleteObjectRequest request, ServerCallContext context)
+    {
+        return await mediator.Send(new DeleteObjectCommand(request));
+    }
+
+    public override async Task<ObjectServiceStatusResponse> DeleteObjectVersion(DeleteObjectVersionRequest request, ServerCallContext context)
+    {
+        return await mediator.Send(new DeleteObjectVersionCommand(request));
     }
 }

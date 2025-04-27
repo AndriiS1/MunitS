@@ -1,6 +1,7 @@
 using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Object.ObjectByUploadId;
+using MunitS.Domain.ObjectSuffix.ObjectSuffixByParentPrefix;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
@@ -41,31 +42,44 @@ public class ObjectDeletionService(IBucketCounterRepository bucketCounterReposit
         var folders = split[new Range(0, split.Length - 1)];
         var fileName = split[^1];
 
-        List<string> parentPrefixes = [];
+        List<string> folderPrefixes = [];
 
         var parentPrefix = "/";
 
         foreach (var folder in folders)
         {
             parentPrefix = Path.Combine(parentPrefix, folder + "/");
-            parentPrefixes.Add(parentPrefix);
+            folderPrefixes.Add(parentPrefix);
         }
 
-        var objectParentPrefix = parentPrefixes.Count > 0 ? parentPrefixes.Last() : "/";
+        var objectParentPrefix = folderPrefixes.Count > 0 ? folderPrefixes.Last() : "/";
 
-        parentPrefixes.Add(objectParentPrefix);
+        folderPrefixes.Reverse();
 
-        parentPrefixes.Reverse();
+        await objectSuffixByParentPrefixRepository.Delete(bucketId, objectParentPrefix, PrefixType.Object, fileName);
 
-        await objectSuffixByParentPrefixRepository.Delete(bucketId, objectParentPrefix, fileName);
-
-        foreach (var prefix in parentPrefixes)
+        foreach (var folderPrefix in folderPrefixes)
         {
-            var anyRelatedObjectSuffix = await objectSuffixByParentPrefixRepository.Any(bucketId, prefix);
+            var anyRelatedObjectSuffix = (await objectSuffixByParentPrefixRepository.FetchTwoAsync(bucketId, folderPrefix)).FirstOrDefault(p => p.Suffix != fileName);
 
             if (anyRelatedObjectSuffix != null) continue;
 
-            await objectSuffixByParentPrefixRepository.Delete(bucketId, objectParentPrefix);
+            await objectSuffixByParentPrefixRepository.Delete(bucketId, GetFolderPrefix(folderPrefix), PrefixType.Directory, GetFolderSuffix(folderPrefix));
         }
+    }
+
+    private static string GetFolderSuffix(string folderPrefix)
+    {
+        var split = folderPrefix.Trim('/').Split("/");
+        
+        return split.Last();
+    }
+    
+    private static string GetFolderPrefix(string folderPrefix)
+    {
+        var split = folderPrefix.Trim('/').Split("/");
+        var prevFolders = split[new Range(0, split.Length - 1)];
+
+        return prevFolders.Length > 0 ? $"/{string.Join("/", prevFolders)}/" : "/";
     }
 }

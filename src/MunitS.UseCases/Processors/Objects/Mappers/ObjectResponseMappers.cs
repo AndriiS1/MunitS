@@ -79,6 +79,7 @@ public static class ObjectResponseMappers
         var response = new GetObjectResponse
         {
             Id = objectByFileKey.Id.ToString(),
+            BucketId = objectByFileKey.BucketId.ToString(),
             CreatedAt = objectByFileKey.CreatedAt.ToString("O"),
             FileKey = objectByFileKey.FileKey
         };

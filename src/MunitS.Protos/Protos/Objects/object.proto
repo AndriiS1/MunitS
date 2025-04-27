@@ -116,10 +116,11 @@ message GetObjectRequest {
 }
 
 message GetObjectResponse {
-  string id = 1;
-  string fileKey = 2;
-  string createdAt = 3;
-  repeated ObjectVersionResponse Versions = 4;
+  string bucketId = 1;
+  string id = 2;
+  string fileKey = 3;
+  string createdAt = 4;
+  repeated ObjectVersionResponse Versions = 5;
 }
 
 message ObjectVersionResponse {

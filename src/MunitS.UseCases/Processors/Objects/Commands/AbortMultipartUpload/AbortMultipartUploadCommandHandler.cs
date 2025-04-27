@@ -39,11 +39,11 @@ public class AbortMultipartUploadCommandHandler(IObjectByUploadIdRepository obje
             throw new RpcException(new Status(StatusCode.NotFound, "Cannot abort already uploaded object."));
         }
 
-        var allVersions = await objectByUploadIdRepository.GetAll(bucket.Id, objectId);
+        var versions = await objectByUploadIdRepository.GetAll(bucket.Id, objectId);
 
         List<Task> tasks = [objectByUploadIdRepository.Delete(bucket.Id, objectId, objectToAbort.UploadId), partByUploadIdRepository.Delete(bucket.Id, objectToAbort.UploadId)];
 
-        var otherVersions = allVersions.Where(v => v.UploadId != objectToAbort.UploadId).ToList();
+        var otherVersions = versions.Where(v => v.UploadId != objectToAbort.UploadId).ToList();
 
         if (otherVersions.Count == 0)
         {
