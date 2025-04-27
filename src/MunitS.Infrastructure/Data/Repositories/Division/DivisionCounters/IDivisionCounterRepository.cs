@@ -6,4 +6,5 @@ public interface IDivisionCounterRepository
 {
     Task<List<DivisionCounter>> GetAll(Guid bucketId, DivisionType.SizeType type);
     Task IncrementObjectsCount(Guid bucketId, DivisionType.SizeType type, Guid id, long increment = 1);
+    Task Delete(Guid bucketId);
 }

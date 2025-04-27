@@ -30,7 +30,7 @@ public class ObjectByUploadIdRepository(CassandraConnector connector) : IObjectB
 
     public async Task Delete(Guid bucketId, Guid objectId)
     {
-        await _objects.Where(o => o.BucketId == bucketId).Delete().ExecuteAsync();
+        await _objects.Where(o => o.BucketId == bucketId && o.Id == objectId).Delete().ExecuteAsync();
     }
 
     public async Task Delete(Guid bucketId, Guid objectId, Guid uploadId)
@@ -41,5 +41,10 @@ public class ObjectByUploadIdRepository(CassandraConnector connector) : IObjectB
     public async Task Create(ObjectByUploadId objectByUploadId)
     {
         await _objects.Insert(objectByUploadId).ExecuteAsync();
+    }
+
+    public async Task Delete(Guid bucketId)
+    {
+        await _objects.Where(b => b.BucketId == bucketId).Delete().ExecuteAsync();
     }
 }

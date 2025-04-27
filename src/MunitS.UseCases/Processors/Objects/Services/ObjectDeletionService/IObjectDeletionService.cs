@@ -4,4 +4,5 @@ namespace MunitS.UseCases.Processors.Objects.Services.ObjectDeletionService;
 public interface IObjectDeletionService
 {
     Task DeleteOldestObjectVersion(string bucketName, ObjectByUploadId objectByUploadId);
+    Task DeleteObjectPrefixesRelations(Guid bucketId, string fileKey);
 }

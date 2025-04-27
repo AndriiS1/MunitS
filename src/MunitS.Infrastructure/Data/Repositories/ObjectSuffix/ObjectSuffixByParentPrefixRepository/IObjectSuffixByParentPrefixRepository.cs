@@ -7,8 +7,9 @@ public interface IObjectSuffixByParentPrefixRepository
     Task<ObjectSuffixesPage> GetPage(Guid bucketId, string parentPrefix, int pageSize,
         ObjectSuffixesPage.ObjectSuffixesPageCursor cursor);
 
-    Task Delete(Guid bucketId, string parentPrefix, string suffix);
+    Task Delete(Guid bucketId, string parentPrefix, PrefixType type, string suffix);
     Task Delete(Guid bucketId, string parentPrefix);
     public Task Create(ObjectSuffixByParentPrefix objectSuffixByParentPrefix);
-    Task<ObjectSuffixByParentPrefix?> Any(Guid bucketId, string parentPrefix);
+    Task<List<ObjectSuffixByParentPrefix>> FetchTwoAsync(Guid bucketId, string parentPrefix);
+    Task Delete(Guid bucketId);
 }

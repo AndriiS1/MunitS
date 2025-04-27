@@ -8,11 +8,6 @@ public class ObjectSuffixByParentPrefixRepository(CassandraConnector connector) 
 {
     private readonly Table<ObjectSuffixByParentPrefix> _objects = new(connector.GetSession());
 
-    public async Task Delete(Guid bucketId, string parentPrefix, string suffix)
-    {
-        await _objects.Where(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId && o.Suffix == suffix).Delete().ExecuteAsync();
-    }
-
     public async Task Delete(Guid bucketId, string parentPrefix)
     {
         await _objects.Where(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId).Delete().ExecuteAsync();
@@ -23,22 +18,16 @@ public class ObjectSuffixByParentPrefixRepository(CassandraConnector connector) 
         await _objects.Insert(objectSuffixByParentPrefix).ExecuteAsync();
     }
 
-    public async Task<ObjectSuffixByParentPrefix?> Any(Guid bucketId, string parentPrefix)
-    {
-        return await _objects.FirstOrDefault(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId).ExecuteAsync();
-    }
-
     public async Task<ObjectSuffixesPage> GetPage(Guid bucketId, string parentPrefix, int pageSize,
         ObjectSuffixesPage.ObjectSuffixesPageCursor cursor)
     {
         const string queryString = """
-
-                                                       SELECT * FROM object_suffixes_by_parent_prefix 
-                                                       WHERE bucket_id = ? 
-                                                       AND parent_prefix = ? 
-                                                       AND (type, suffix) > (?, ?)
-                                                       ORDER BY type , suffix
-                                                       LIMIT ?
+                                       SELECT * FROM object_suffixes_by_parent_prefix 
+                                       WHERE bucket_id = ? 
+                                       AND parent_prefix = ? 
+                                       AND (type, suffix) > (?, ?)
+                                       ORDER BY type , suffix
+                                       LIMIT ?
                                    """;
 
         var cql = new Cql(queryString, bucketId, parentPrefix, cursor.Type.ToString(), cursor.Suffix, pageSize + 1);
@@ -64,5 +53,25 @@ public class ObjectSuffixByParentPrefixRepository(CassandraConnector connector) 
                 ? new ObjectSuffixesPage.ObjectSuffixesPageCursor(Enum.Parse<PrefixType>(lastItem.Type), lastItem.Suffix)
                 : null
         };
+    }
+
+    public async Task Delete(Guid bucketId)
+    {
+        await _objects.Where(b => b.BucketId == bucketId).Delete().ExecuteAsync();
+    }
+
+    public async Task Delete(Guid bucketId, string parentPrefix, PrefixType type, string suffix)
+    {
+        await _objects.Where(o => o.BucketId == bucketId && o.ParentPrefix == parentPrefix
+                                                         && o.Type == type.ToString()
+                                                         && o.Suffix == suffix).Delete().ExecuteAsync();
+    }
+
+    public async Task<List<ObjectSuffixByParentPrefix>> FetchTwoAsync(Guid bucketId, string parentPrefix)
+    {
+        return (await _objects
+            .Where(o => o.ParentPrefix == parentPrefix && o.BucketId == bucketId)
+            .Take(2)
+            .ExecuteAsync()).ToList();
     }
 }

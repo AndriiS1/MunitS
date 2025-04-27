@@ -37,4 +37,9 @@ public class BucketCounterRepository(CassandraConnector connector) : IBucketCoun
         var bound = prepared.Bind(increment, bucketId);
         await _bucketCounters.GetSession().ExecuteAsync(bound).ConfigureAwait(false);
     }
+
+    public async Task Delete(Guid id)
+    {
+        await _bucketCounters.Where(b => b.Id == id).Delete().ExecuteAsync();
+    }
 }

@@ -31,7 +31,7 @@ CREATE TABLE division_counters (
     type TEXT,
     id UUID,
     objects_count COUNTER,
-    PRIMARY KEY ((bucket_id, type), id)
+    PRIMARY KEY ((bucket_id), type, id)
 );
 
 DROP TABLE IF EXISTS divisions_by_bucket_id;
@@ -41,7 +41,7 @@ CREATE TABLE divisions_by_bucket_id (
     name TEXT,
     id UUID,
     objects_limit BIGINT,
-    PRIMARY KEY ((bucket_id, type), id)
+    PRIMARY KEY ((bucket_id), type, id)
 );
 
 DROP TABLE IF EXISTS object_suffixes_by_parent_prefix;

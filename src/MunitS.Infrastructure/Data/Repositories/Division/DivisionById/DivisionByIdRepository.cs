@@ -16,4 +16,9 @@ public class DivisionByIdRepository(CassandraConnector connector) : IDivisionByI
         return (await _divisions.Where(d => d.BucketId == bucketId && d.Type == type.ToString())
             .ExecuteAsync()).ToList();
     }
+
+    public async Task Delete(Guid bucketId)
+    {
+        await _divisions.Where(b => b.BucketId == bucketId).Delete().ExecuteAsync();
+    }
 }
