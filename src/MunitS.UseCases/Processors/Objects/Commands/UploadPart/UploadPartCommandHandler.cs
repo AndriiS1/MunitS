@@ -3,8 +3,11 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using MunitS.Domain.Directory;
 using MunitS.Domain.Directory.Dtos;
+using MunitS.Domain.Metric.MetricByDate;
 using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
+using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
+using MunitS.Infrastructure.Data.Repositories.Metric.MetricByDate;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.UseCases.Processors.Service.PathRetriever;
@@ -13,7 +16,9 @@ namespace MunitS.UseCases.Processors.Objects.Commands.UploadPart;
 public class UploadPartCommandHandler(IBucketByIdRepository bucketByIdRepository,
     IObjectByUploadIdRepository objectByUploadIdRepository,
     IPartByUploadIdRepository partByUploadIdRepository,
-    IPathRetriever pathRetriever) : IRequestHandler<UploadPartCommand, IResult>
+    IPathRetriever pathRetriever,
+    IMetricByDateRepository metricByDateRepository,
+    IBucketCounterRepository bucketCounterRepository) : IRequestHandler<UploadPartCommand, IResult>
 {
     public async Task<IResult> Handle(UploadPartCommand command, CancellationToken cancellationToken)
     {
@@ -46,7 +51,10 @@ public class UploadPartCommandHandler(IBucketByIdRepository bucketByIdRepository
         var etag = Convert.ToHexString(hash!).ToLowerInvariant();
 
         var partByUploadId = PartByUploadId.Create(bucket.Id, command.UploadId, etag, command.PartNumber);
-        await partByUploadIdRepository.Create(partByUploadId);
+
+        await Task.WhenAll(partByUploadIdRepository.Create(partByUploadId),
+            metricByDateRepository.Create(MetricByDate.Create(bucket.Id, Operation.UploadPart)),
+            bucketCounterRepository.IncrementTypeAOperationsCount(bucket.Id));
 
         return Results.Ok(new
         {

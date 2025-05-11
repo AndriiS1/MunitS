@@ -7,6 +7,7 @@ using MunitS.Domain.Bucket.BucketByName;
 using MunitS.Domain.Bucket.BucketCounter;
 using MunitS.Domain.Division.DivisionByBucketId;
 using MunitS.Domain.Division.DivisionCounter;
+using MunitS.Domain.Metric.MetricByDate;
 using MunitS.Domain.Object.ObjectByFileKey;
 using MunitS.Domain.Object.ObjectByUploadId;
 using MunitS.Domain.ObjectSuffix.ObjectSuffixByParentPrefix;
@@ -17,12 +18,14 @@ using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByNameRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionById;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
+using MunitS.Infrastructure.Data.Repositories.Metric.MetricByDate;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Infrastructure.Options.DataBase;
 using MunitS.Infrastructure.Options.Storage;
+using BucketByIdByIdRepository = MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository.BucketByIdByIdRepository;
 namespace MunitS.Infrastructure;
 
 public static class InfrastructureExtensions
@@ -54,6 +57,7 @@ public static class InfrastructureExtensions
         ));
 
         MappingConfiguration.Global.Define<BucketsByIdMapping>();
+        MappingConfiguration.Global.Define<MetricsByDateMapping>();
         MappingConfiguration.Global.Define<BucketsByNameMapping>();
         MappingConfiguration.Global.Define<BucketCountersMapping>();
         MappingConfiguration.Global.Define<DivisionsByBucketIdMapping>();
@@ -66,6 +70,7 @@ public static class InfrastructureExtensions
 
     private static void ConfigureRepositories(this WebApplicationBuilder builder)
     {
+        builder.Services.AddSingleton<IMetricByDateRepository, MetricByDateRepository>();
         builder.Services.AddSingleton<IObjectSuffixByParentPrefixRepository, ObjectSuffixByParentPrefixRepository>();
         builder.Services.AddSingleton<IPartByUploadIdRepository, PartByUploadIdRepository>();
         builder.Services.AddSingleton<IBucketByIdRepository, BucketByIdByIdRepository>();

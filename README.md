@@ -6,6 +6,8 @@ CREATE TABLE bucket_counters (
     id UUID,
     objects_count COUNTER,
     size_in_bytes COUNTER,
+    type_a_operations_count COUNTER,
+    type_b_operations_count COUNTER,
     PRIMARY KEY ((id))
 );
 
@@ -15,6 +17,7 @@ CREATE TABLE buckets_by_id (
     name TEXT,
     versioning_enabled BOOLEAN,
     versions_limit INT,
+    created_at TIMESTAMP,
     PRIMARY KEY ((id))
 );
 
@@ -94,5 +97,16 @@ CREATE TABLE parts_by_upload_id (
     number INT,
     PRIMARY KEY ((bucket_id), upload_id, number)
 );
+
+DROP TABLE IF EXISTS metrics_by_date;
+CREATE TABLE metrics_by_date (
+    bucket_id UUID,
+    date DATE,
+    type TEXT,
+    id UUID,
+    operation TEXT,
+    time TIMESTAMP,
+    PRIMARY KEY ((bucket_id), date, time)
+) WITH CLUSTERING ORDER BY (date ASC, time ASC);
 ```
 

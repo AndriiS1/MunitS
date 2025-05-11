@@ -3,12 +3,15 @@ using MediatR;
 using MunitS.Domain.Directory;
 using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Division.DivisionByBucketId;
+using MunitS.Domain.Metric.MetricByDate;
 using MunitS.Domain.Object.ObjectByFileKey;
 using MunitS.Domain.Object.ObjectByUploadId;
 using MunitS.Domain.Rules;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
+using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionById;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
+using MunitS.Infrastructure.Data.Repositories.Metric.MetricByDate;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByFileKeyRepository;
 using MunitS.Infrastructure.Data.Repositories.ObjectSuffix.ObjectSuffixByParentPrefixRepository;
 using MunitS.Protos;
@@ -25,7 +28,9 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
     IDivisionByIdRepository divisionByIdRepository,
     IDivisionBuilder divisionBuilder,
     IDivisionCounterRepository divisionCounterRepository,
-    IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository)
+    IObjectSuffixByParentPrefixRepository objectSuffixByParentPrefixRepository,
+    IMetricByDateRepository metricByDateRepository,
+    IBucketCounterRepository bucketCounterRepository)
     : IRequestHandler<InitiateMultipartUploadCommand, InitiateMultipartUploadResponse>
 {
     public async Task<InitiateMultipartUploadResponse> Handle(InitiateMultipartUploadCommand command, CancellationToken cancellationToken)
@@ -83,7 +88,9 @@ public class InitiateMultipartUploadCommandHandler(IObjectsBuilder objectsBuilde
             objectsBuilder
                 .ToInsert(objectByBucketId)
                 .ToInsert(objectByFileKey)
-                .Build()
+                .Build(),
+            metricByDateRepository.Create(MetricByDate.Create(bucket.Id, Operation.InitiateMultipartUpload)),
+            bucketCounterRepository.IncrementTypeAOperationsCount(bucket.Id)
         ];
 
         var prefixes = ObjectSuffixesRetriever.GetObjectSuffixes(bucket.Id, fileKey, objectId, command.Request.MimeType);

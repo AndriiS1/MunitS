@@ -3,11 +3,13 @@ using MediatR;
 using MunitS.Domain.Directory;
 using MunitS.Domain.Directory.Dtos;
 using MunitS.Domain.Division.DivisionByBucketId;
+using MunitS.Domain.Metric.MetricByDate;
 using MunitS.Domain.Object.ObjectByUploadId;
 using MunitS.Domain.Part.PartByUploadId;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketByIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Bucket.BucketCounter;
 using MunitS.Infrastructure.Data.Repositories.Division.DivisionCounters;
+using MunitS.Infrastructure.Data.Repositories.Metric.MetricByDate;
 using MunitS.Infrastructure.Data.Repositories.Object.ObjectByUploadIdRepository;
 using MunitS.Infrastructure.Data.Repositories.Part.PartByUploadId;
 using MunitS.Protos;
@@ -21,7 +23,8 @@ public class CompleteMultipartUploadCommandHandler(IObjectByUploadIdRepository o
     IPartByUploadIdRepository partByUploadIdRepository,
     IDivisionCounterRepository divisionCounterRepository,
     IBucketCounterRepository bucketCounterRepository,
-    IObjectDeletionService objectDeletionService) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
+    IObjectDeletionService objectDeletionService,
+    IMetricByDateRepository metricByDateRepository) : IRequestHandler<CompleteMultipartUploadCommand, ObjectServiceStatusResponse>
 {
     public async Task<ObjectServiceStatusResponse> Handle(CompleteMultipartUploadCommand command, CancellationToken cancellationToken)
     {
@@ -70,7 +73,9 @@ public class CompleteMultipartUploadCommandHandler(IObjectByUploadIdRepository o
             partByUploadIdRepository.Delete(bucket.Id, uploadId),
             bucketCounterRepository.IncrementObjectsCount(bucket.Id),
             bucketCounterRepository.IncrementSizeInBytesCount(bucket.Id, objectToComplete.SizeInBytes),
-            divisionCounterRepository.IncrementObjectsCount(bucket.Id, Enum.Parse<DivisionType.SizeType>(objectToComplete.DivisionSizeType), objectToComplete.DivisionId)
+            divisionCounterRepository.IncrementObjectsCount(bucket.Id, Enum.Parse<DivisionType.SizeType>(objectToComplete.DivisionSizeType), objectToComplete.DivisionId),
+            metricByDateRepository.Create(MetricByDate.Create(bucket.Id, Operation.CompleteMultipartUpload)),
+            bucketCounterRepository.IncrementTypeAOperationsCount(bucket.Id)
         ];
 
         await Task.WhenAll(tasks);
