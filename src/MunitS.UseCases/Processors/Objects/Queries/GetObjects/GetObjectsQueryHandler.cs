@@ -24,7 +24,7 @@ public class UploadFileCommandHandler(IObjectSuffixByParentPrefixRepository obje
         var page = await objectSuffixByParentPrefixRepository
             .GetPage(bucketId, query.Request.Prefix, query.Request.PageSize, cursor);
 
-        await Task.WhenAll(metricByDateRepository.Create(MetricByDate.Create(bucketId, Operation.CompleteMultipartUpload)),
+        await Task.WhenAll(metricByDateRepository.Create(MetricByDate.Create(bucketId, Operation.ListObjects)),
             bucketCounterRepository.IncrementTypeBOperationsCount(bucketId));
 
         return ObjectResponseMappers.FormatObjectSuffixes(page);
