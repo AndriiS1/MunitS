@@ -7,6 +7,7 @@ public class BucketById
     public required string Name { get; init; }
     public required bool VersioningEnabled { get; init; }
     public required int VersionsLimit { get; init; }
+    public required DateTimeOffset CreatedAt { get; init; }
 
     public static BucketById Create(string name, bool versioningEnabled, int versionsLimit)
     {
@@ -15,7 +16,8 @@ public class BucketById
             Id = Guid.NewGuid(),
             Name = name,
             VersioningEnabled = versioningEnabled,
-            VersionsLimit = versionsLimit
+            VersionsLimit = versionsLimit,
+            CreatedAt = DateTimeOffset.UtcNow
         };
     }
 }

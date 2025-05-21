@@ -26,6 +26,28 @@ public class BucketCounterRepository(CassandraConnector connector) : IBucketCoun
         var bound = prepared.Bind(increment, bucketId);
         await _bucketCounters.GetSession().ExecuteAsync(bound).ConfigureAwait(false);
     }
+    
+    public async Task IncrementTypeAOperationsCount(Guid bucketId, long increment = 1)
+    {
+        const string cql = $"UPDATE {BucketCountersMapping.TableName} "
+                           + $"SET {BucketCountersMapping.TypeAOperationsCountColumnName} = "
+                           + $"{BucketCountersMapping.TypeAOperationsCountColumnName} + ? WHERE id = ?";
+
+        var prepared = await _bucketCounters.GetSession().PrepareAsync(cql);
+        var bound = prepared.Bind(increment, bucketId);
+        await _bucketCounters.GetSession().ExecuteAsync(bound).ConfigureAwait(false);
+    }
+    
+    public async Task IncrementTypeBOperationsCount(Guid bucketId, long increment = 1)
+    {
+        const string cql = $"UPDATE {BucketCountersMapping.TableName} "
+                           + $"SET {BucketCountersMapping.TypeBOperationsCountColumnName} = "
+                           + $"{BucketCountersMapping.TypeBOperationsCountColumnName} + ? WHERE id = ?";
+
+        var prepared = await _bucketCounters.GetSession().PrepareAsync(cql);
+        var bound = prepared.Bind(increment, bucketId);
+        await _bucketCounters.GetSession().ExecuteAsync(bound).ConfigureAwait(false);
+    }
 
     public async Task IncrementSizeInBytesCount(Guid bucketId, long increment)
     {

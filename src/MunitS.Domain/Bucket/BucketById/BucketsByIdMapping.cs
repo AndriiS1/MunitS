@@ -13,6 +13,7 @@ public class BucketsByIdMapping : Mappings
             .Column(c => c.Id, cm => cm.WithName("id"))
             .Column(c => c.Name, cm => cm.WithName("name"))
             .Column(c => c.VersioningEnabled, cm => cm.WithName("versioning_enabled"))
-            .Column(c => c.VersionsLimit, cm => cm.WithName("versions_limit"));
+            .Column(c => c.VersionsLimit, cm => cm.WithName("versions_limit"))
+            .Column(c => c.CreatedAt, cm => cm.WithName("created_at"));
     }
 }

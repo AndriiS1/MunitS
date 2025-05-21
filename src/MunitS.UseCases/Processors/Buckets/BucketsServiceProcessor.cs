@@ -34,4 +34,9 @@ public class BucketsServiceProcessor(IMediator mediator) : BucketsService.Bucket
     {
         return await mediator.Send(new GetBucketsQuery(request));
     }
+
+    public override async Task<GetMetricsResponse> GetBucketMetrics(GetMetricsRequest request, ServerCallContext context)
+    {
+        return await mediator.Send(new GetMetricsQuery(request));
+    }
 }

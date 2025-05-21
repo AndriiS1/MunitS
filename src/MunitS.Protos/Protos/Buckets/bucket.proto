@@ -10,6 +10,8 @@ service BucketsService {
   rpc GetBucket(GetBucketRequest) returns (BucketResponse);
   rpc GetBuckets(GetBucketsRequest) returns (GetBucketsResponse);
   rpc BucketExistsCheck(BucketExistsCheckRequest) returns (BucketExistsResponse);
+
+  rpc GetBucketMetrics(GetMetricsRequest) returns (GetMetricsResponse);
 }
 
 // Create
@@ -39,11 +41,14 @@ message BucketResponse {
   bool versioningEnabled = 3;
   int32 versionsLimit = 4;
   BucketCountersResponse counter = 5;
+  string createdAt = 6;
 }
 
 message BucketCountersResponse {
   int64 size = 1;
   int64 objectsCount = 2;
+  int64 typeAOperationsCount = 3;
+  int64 typeBOperationsCount = 4;
 }
 
 // Get buckets
@@ -68,4 +73,19 @@ message BucketExistsResponse {
 // Status response
 message BucketServiceStatusResponse {
   string status = 1;
+}
+
+// Get bucket metrics
+message GetMetricsRequest {
+  string bucketId = 1;
+}
+
+message GetMetricsResponse {
+  repeated MetricResponse metrics = 2;
+}
+
+message MetricResponse{
+  string date = 1;
+  int64 typeAOperationsCount = 2;
+  int64 typeBOperationsCount = 3;
 }

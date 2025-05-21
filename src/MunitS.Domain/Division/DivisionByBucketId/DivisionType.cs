@@ -15,8 +15,8 @@ public record DivisionType
     private const long MediumLimit = 1000;
     private const long SmallLimit = 100;
     
-    private const long LargeObjectSizeInBytesLimit = 10000000;
-    private const long MediumObjectSizeInBytesLimit = 100000000;
+    private const long LargeObjectSizeInBytesLimit = 100000000;
+    private const long MediumObjectSizeInBytesLimit = 1000000000;
 
     public static string GetSizeTypePrefix(SizeType sizeType)
     {

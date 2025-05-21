@@ -10,7 +10,9 @@ public static class ResponseMappers
         return new BucketCountersResponse
         {
             ObjectsCount = bucketCounter.ObjectsCount,
-            Size = bucketCounter.SizeInBytes
+            Size = bucketCounter.SizeInBytes,
+            TypeAOperationsCount = bucketCounter.TypeAOperationsCount,
+            TypeBOperationsCount = bucketCounter.TypeBOperationsCount
         };
     }
 
@@ -22,7 +24,8 @@ public static class ResponseMappers
             Name = bucketById.Name,
             VersioningEnabled = bucketById.VersioningEnabled,
             VersionsLimit = bucketById.VersionsLimit,
-            Counter = counter is null ? null : FromBucketCounter(counter)
+            Counter = counter is null ? null : FromBucketCounter(counter),
+            CreatedAt = bucketById.CreatedAt.ToString("O")
         };
     }
 
