@@ -1,3 +1,10 @@
+The system consists of **two parts** and **three components**:
+
+1. **MunitS Hub**
+   - [**MunitS Hub Client**](https://github.com/AndriiS1/munits-hub-client) – a frontend interface to showcase the storage capabilities.
+   - [**MunitS Hub Backend**](https://github.com/AndriiS1/munits-hub) – a backend layer between the client and the object storage, providing authentication and management functionality.
+2. [**MunitS**](https://github.com/AndriiS1/munits) – an **integrable object storage solution** that can be connected to other systems.
+
 # MunitS
 
 MunitS is a distributed object storage system, inspired by Amazon S3 and Cloudflare R2, built with .NET 10 and Apache Cassandra. It provides a robust platform for managing large-scale data through a gRPC-based API, with support for multipart uploads, bucket management, and object versioning.
@@ -226,7 +233,7 @@ The API contracts are defined in the `.proto` files located in `src/MunitS.Pr
   - `GetObject`: Retrieves an object's metadata and its versions.
   - `GetObjectsByPrefix`: Lists objects and common prefixes within a bucket.
 
-# Links
+# Don't forget to check
 
 - [MunitS Hub Client](https://github.com/AndriiS1/munits-hub-client)
 - [MunitS Hub Backend](https://github.com/AndriiS1/munits-hub)
