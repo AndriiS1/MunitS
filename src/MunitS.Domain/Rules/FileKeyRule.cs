@@ -10,8 +10,8 @@ public static class FileKeyRule
         var extension = GetExtension(fileKey);
 
         var fileNameWithoutExtension = nameParts.Length > 1
-            ? string.Join(".", nameParts[..^1]) // everything except extension
-            : fileNameWithExtension; // no extension present
+            ? string.Join(".", nameParts[..^1])
+            : fileNameWithExtension;
 
         return $"{fileNameWithoutExtension}.{extension}";
     }

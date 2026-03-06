@@ -13,7 +13,11 @@ public class BucketByIdByIdRepository(CassandraConnector connector) : IBucketByI
 
     public async Task<List<BucketById>> GetAll(Guid[] bucketIds)
     {
-        return (await _buckets.Where(b => bucketIds.Contains(b.Id)).ExecuteAsync()).ToList();
+        var results = await Task.WhenAll(bucketIds.Select(async bi => await Get(bi)));
+
+        return results
+            .Where(r => r != null)
+            .ToList()!;
     }
 
     public async Task Create(BucketById bucketById)

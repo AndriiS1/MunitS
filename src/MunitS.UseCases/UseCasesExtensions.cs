@@ -5,7 +5,6 @@ using MunitS.UseCases.Processors.Objects;
 using MunitS.UseCases.Processors.Objects.Services.DivisionBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectBuilder;
 using MunitS.UseCases.Processors.Objects.Services.ObjectDeletionService;
-using MunitS.UseCases.Processors.Service.Compression;
 using MunitS.UseCases.Processors.Service.PathRetriever;
 namespace MunitS.UseCases;
 
@@ -22,7 +21,6 @@ public static class UseCasesExtensions
         builder.Services.AddMediatr();
         builder.Services.AddSingleton<IPathRetriever, PathRetriever>();
         builder.Services.AddScoped<IObjectDeletionService, ObjectDeletionService>();
-        builder.Services.AddScoped<ICompressionService, CompressionService>();
         builder.Services.AddScoped<IObjectsBuilder, ObjectsBuilder>();
         builder.Services.AddScoped<IDivisionBuilder, DivisionBuilder>();
     }

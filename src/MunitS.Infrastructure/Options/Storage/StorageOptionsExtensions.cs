@@ -15,8 +15,6 @@ public static class StorageOptionsExtensions
 
     private static bool ValidateOptions(StorageOptions options)
     {
-        if(!Directory.Exists(options.RootDirectory)) throw new ArgumentException($"Directory {options.RootDirectory} does not exist");
-
-        return true;
+        return !Directory.Exists(options.RootDirectory) ? throw new ArgumentException($"Directory {options.RootDirectory} does not exist") : true;
     }   
 }
