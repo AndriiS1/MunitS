@@ -1,6 +1,6 @@
 # MunitS
 
-MunitS is a distributed object storage system, inspired by Amazon S3 and Cloudflare R2, built with .NET and Apache Cassandra. It provides a robust platform for managing large-scale data through a gRPC-based API, with support for multipart uploads, bucket management, and object versioning.
+MunitS is a distributed object storage system, inspired by Amazon S3 and Cloudflare R2, built with .NET 10 and Apache Cassandra. It provides a robust platform for managing large-scale data through a gRPC-based API, with support for multipart uploads, bucket management, and object versioning.
 
 To see demo check [MunitS Hub Client](https://github.com/AndriiS1/munits-hub-client) and to get familiar with authentication system see [MunitS Hub Backend](https://github.com/AndriiS1/munits-hub)
 
@@ -26,7 +26,7 @@ Upload part (**PUT** `/objects/{objectId}/upload/{uploadId}/parts`): this endpo
 
 ### Prerequisites
 
-- .NET 9 SDK or later
+- .NET 10 SDK or later
 - Docker (optionally for cassandra cluster)
 
 ### Database Setup
